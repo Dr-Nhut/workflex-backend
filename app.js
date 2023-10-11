@@ -4,7 +4,7 @@ const bodyParser = require('body-parser')
 const cors = require('cors');
 
 
-const conn = require('./src/database');
+const conn = require('./src/config/db.config');
 const route = require('./src/routes');
 
 const port = 3000;

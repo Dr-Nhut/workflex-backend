@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const conn = require('../database');
+const conn = require('../config/db.config')
 
 class SkillController {
     getAll(req, res, next) {

@@ -6,6 +6,7 @@ const cors = require('cors');
 
 const conn = require('./src/config/db.config');
 const route = require('./src/routes');
+const cookieParser = require('cookie-parser');
 
 const port = 3000;
 
@@ -17,7 +18,11 @@ conn.connect((err) => {
 
 const app = express()
 
-app.use(cors())
+app.use(cookieParser());
+app.use(cors({
+    credentials: true,
+    origin: 'http://localhost:5173'
+}));
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -26,6 +31,8 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 
 app.use(morgan('combined'))
+
+app.use(express.static('public'))
 
 route(app);
 

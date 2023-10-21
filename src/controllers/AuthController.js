@@ -1,6 +1,8 @@
 const crypto = require('crypto');
 
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+require('dotenv/config');
 
 const conn = require('../config/db.config')
 const mailer = require('../utils/mailer');
@@ -42,12 +44,13 @@ class AuthController {
     }
 
     registerUser(req, res, next) {
-        const { fullname, email, password, address, role, emailVerifiedAt } = req.body;
+        const { fullname, email, password, address, role, emailVerifiedAt, sex } = req.body;
         bcrypt.hash(password, 10)
             .then(hash => {
                 req.id = crypto.randomUUID();
-                const sql = "INSERT INTO user (id, fullname, email, password, address, role, email_verified_at) VALUES(?, ?, ?, ?, ?, ?, ?)";
-                return conn.promise().query(sql, [req.id, fullname, email, hash, address, role, new Date(emailVerifiedAt)])
+                const avatar = sex === 'Nam' ? 'avatar-default/avatar-man.png' : '/public/avatar-default/avatar-woman.png'
+                const sql = "INSERT INTO user (id, fullname, email, avatar, password, address, role, sex, email_verified_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                return conn.promise().query(sql, [req.id, fullname, email, avatar, hash, address, role, sex, new Date(emailVerifiedAt)])
             })
             .then(() => {
                 const { categories } = req.body;
@@ -77,6 +80,65 @@ class AuthController {
 
             })
             .catch((e) => console.error(e));
+    }
+
+    login(req, res, next) {
+        const { email, password } = req.body;
+        const sql = `SELECT * FROM user WHERE email=('${email.trim()}');`;
+        conn.promise().query(sql)
+            .then(async ([rows, fields]) => {
+                if (rows[0]) {
+                    const match = await bcrypt.compare(password, rows[0].password);
+                    if (!match) {
+                        return res.json({
+                            status: "error",
+                            message: "Tài khoản hoặc mật khẩu không đúng",
+                        });
+                    }
+                    console.log('continue');
+                    const token = jwt.sign(
+                        {
+                            userId: rows[0].id
+                        },
+                        process.env.JWT_KEY,
+                        { expiresIn: "365d" }
+                    );
+                    const user = {
+                        id: rows[0].id,
+                        fullname: rows[0].fullname,
+                        email: rows[0].email,
+                        avatar: rows[0].avatar,
+                        role: rows[0].role,
+                        address: rows[0].address,
+                    }
+                    res.json({
+                        status: 'success',
+                        user,
+                        token,
+                    });
+                }
+                else {
+                    return res.json({
+                        status: "error",
+                        message: "Tài khoản hoặc mật khẩu không đúng",
+                    });
+                }
+            })
+            .catch((e) => console.error(e));
+    }
+
+    getUser(req, res) {
+        const token = req.cookies.token;
+        console.log(token);
+        jwt.verify(token, process.env.JWT_KEY, (err, decoded) => {
+            if (err) res.status(404).send('Invalid token');
+            if (decoded) {
+                const sql = `SELECT id, fullname, avatar, email, role, address FROM user WHERE id='${decoded.userId}';`;
+                conn.promise().query(sql)
+                    .then(([rows, fields]) => res.json(rows[0]))
+                    .catch(err => console.log(err))
+            }
+        });
     }
 }
 

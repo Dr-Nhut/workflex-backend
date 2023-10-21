@@ -13,7 +13,6 @@ class SkillController {
 
     create(req, res, next) {
         const { name } = req.body;
-        console.log(req.body);
         const sql = "INSERT INTO skill (id, name) VALUES(?, ?)";
         const id = crypto.randomUUID();
         conn.promise().query(sql, [id, name])

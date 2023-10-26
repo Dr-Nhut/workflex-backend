@@ -6,6 +6,8 @@ router.get("/pending-jobs", JobController.getPendingJob);
 router.get("/bidding-jobs", JobController.getBiddingJob);
 router.get("/bidnlock-jobs", JobController.getBiddingAndLockingJob);
 router.get("/refused-jobs", JobController.getRefusedJob);
+router.get("/employer-current-jobs", JobController.getEmployerJob)
+router.get("/freelancer-current-jobs", JobController.getFreelancerJob)
 
 router.get("/:id", JobController.getDetailJob);
 

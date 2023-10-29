@@ -2,6 +2,16 @@ const crypto = require('crypto');
 const conn = require('../config/db.config')
 
 class JobController {
+    getJobByStatus(req, res, next) {
+        const status = req.query.status;
+        const sql = `SELECT job.id, job.name, job.maxBudget, job.bidDeadline, job.createAt, category.name as category, user.email as employerEmail FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN user ON job.employerId=user.id WHERE job.status='${status}';`;
+        conn.promise().query(sql)
+            .then(([rows, fields]) => {
+                res.send(rows);
+            })
+            .catch(err => console.error(err));
+    }
+
     getEmployerJob(req, res, next) {
         const { employerId, status } = req.query;
 
@@ -19,7 +29,6 @@ class JobController {
 
         const sql = `SELECT job.id, job.name, job.description, job.maxBudget, job.bidDeadline, job.createAt, job.duration, job.type, job.experience, job.status, job.completedAt, category.name as category FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN offer ON offer.jobId=job.id WHERE offer.freelancerId='${freelancerId}' AND job.status=${status};`;
 
-        console.log(sql);
         conn.promise().query(sql)
             .then(([rows, fields]) => {
                 res.send(rows);

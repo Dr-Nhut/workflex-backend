@@ -6,6 +6,7 @@ const cors = require('cors');
 const conn = require('./src/config/db.config');
 const route = require('./src/routes');
 const cookieParser = require('cookie-parser');
+const StripeController = require('./src/controllers/StripeController');
 
 const port = 3000;
 
@@ -22,6 +23,8 @@ app.use(cors({
     credentials: true,
     origin: 'http://localhost:5173'
 }));
+
+app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), StripeController.webhook)
 
 
 // parse application/x-www-form-urlencoded

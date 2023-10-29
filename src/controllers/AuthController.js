@@ -48,7 +48,7 @@ class AuthController {
         bcrypt.hash(password, 10)
             .then(hash => {
                 req.id = crypto.randomUUID();
-                const avatar = sex === 'Nam' ? 'avatar-default/avatar-man.png' : '/public/avatar-default/avatar-woman.png'
+                const avatar = sex === 'Nam' ? 'avatar-default/avatar-man.png' : 'avatar-default/avatar-woman.png'
                 const sql = "INSERT INTO user (id, fullname, email, avatar, password, address, role, sex, email_verified_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 return conn.promise().query(sql, [req.id, fullname, email, avatar, hash, address, role, sex, new Date(emailVerifiedAt)])
             })
@@ -136,6 +136,23 @@ class AuthController {
                 const sql = `SELECT id, fullname, avatar, email, role, address FROM user WHERE id='${decoded.userId}';`;
                 conn.promise().query(sql)
                     .then(([rows, fields]) => res.json(rows[0]))
+                    .catch(err => console.log(err))
+            }
+        });
+    }
+
+    getUserId(req, res, next) {
+        const token = req.cookies.token;
+        jwt.verify(token, process.env.JWT_KEY, (err, decoded) => {
+            if (err) res.status(404).send('Invalid token');
+            if (decoded) {
+                const sql = `SELECT id FROM user WHERE id='${decoded.userId}';`;
+                conn.promise().query(sql)
+                    .then(([rows, fields]) => {
+                        console.log(rows);
+                        req.userId = rows[0].id;
+                        next();
+                    })
                     .catch(err => console.log(err))
             }
         });

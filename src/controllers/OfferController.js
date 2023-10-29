@@ -17,7 +17,7 @@ class OfferController {
 
     getOffersJob(req, res) {
         const id = req.query.id;
-        conn.promise().query(`SELECT offer.id, offer.price, offer.description, offer.plan, offer.dateEnd, offer.jobId, offer.freelancerId, offer.status, offer.createAt, user.fullname, user.email, user.avatar FROM offer LEFT JOIN user ON offer.freelancerId = user.id WHERE jobId='${id}'`)
+        conn.promise().query(`SELECT offer.id, offer.price, offer.description, offer.plan, offer.dateEnd, offer.jobId, offer.freelancerId, offer.status, offer.createAt, user.fullname, user.email as freelancerEmail, user.avatar FROM offer LEFT JOIN user ON offer.freelancerId = user.id WHERE jobId='${id}'`)
             .then(([rows, fields]) => res.json(rows))
             .catch((err => console.error(err)));
     }
@@ -33,7 +33,7 @@ class OfferController {
     getProcessingOffer(req, res, next) {
         const jobId = req.query.jobId;
 
-        const sql = `SELECT offer.id, offer.price, offer.description, offer.plan, offer.dateEnd, offer.status, offer.jobId, offer.freelancerId, user.fullname, user.avatar, user.email FROM offer LEFT JOIN user ON offer.freelancerId=user.id WHERE offer.jobId='${jobId}' AND offer.status='Đang thực hiện'`
+        const sql = `SELECT offer.id, offer.price, offer.description, offer.plan, offer.dateEnd, offer.status, offer.jobId, offer.freelancerId, user.fullname, user.avatar, user.email as freelancerEmail FROM offer LEFT JOIN user ON offer.freelancerId=user.id WHERE offer.jobId='${jobId}' AND offer.status='Đang thực hiện'`
         conn.promise().query(sql)
             .then(([rows, fields]) => res.json(rows[0]))
             .catch((err => console.error(err)));

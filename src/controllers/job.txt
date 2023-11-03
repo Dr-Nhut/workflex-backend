@@ -1,4 +1,5 @@
 Status Job:
+0 = Job thất bại
 1 = Đang duyệt
 2 = Từ chối
 3 = Đang chào giá

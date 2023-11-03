@@ -9,7 +9,6 @@ class RecommendationController {
         const categoryId = req.query.categoryId;
         const sql = `SELECT user.id as userId, user.fullname FROM usercategory LEFT JOIN user ON usercategory.userId=user.id WHERE categoryId='${categoryId}' AND user.role='fre'`;
 
-
         conn.promise().query(sql)
             // 2. Get scores for freelancer
             .then(async ([rows, fields]) => {

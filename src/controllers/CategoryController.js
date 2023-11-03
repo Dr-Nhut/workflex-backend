@@ -11,6 +11,16 @@ class CategoryController {
             .catch(err => console.error(err));
     }
 
+    getAllByUser(req, res) {
+        const userId = req.params.userId;
+        const sql = `SELECT * FROM usercategory LEFT JOIN category ON category.id=usercategory.categoryId WHERE userId='${userId}'`;
+        conn.promise().query(sql)
+            .then(([rows, fields]) => {
+                res.send(rows[0]);
+            })
+            .catch(err => console.error(err));
+    }
+
     create(req, res, next) {
         const { name } = req.body;
         console.log(req.body);

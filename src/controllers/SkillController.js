@@ -11,6 +11,16 @@ class SkillController {
             .catch(err => console.error(err));
     }
 
+    getAllByUser(req, res) {
+        const userId = req.params.userId;
+        const sql = `SELECT * FROM freelancerskill LEFT JOIN skill ON freelancerskill.skillId=skill.id WHERE freelancerskill.freelancerId='${userId}'`;
+        conn.promise().query(sql)
+            .then(([rows, fields]) => {
+                res.send(rows);
+            })
+            .catch(err => console.error(err));
+    }
+
     create(req, res, next) {
         const { name } = req.body;
         const sql = "INSERT INTO skill (id, name) VALUES(?, ?)";

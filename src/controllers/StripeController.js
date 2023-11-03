@@ -81,7 +81,7 @@ class StripeController {
                     const sql = "INSERT INTO payment (id, contractId, createdAt, total, paymentIntent) VALUES (?,?, ?, ?, ?);";
                     conn.promise().query(sql, [id, contractId, new Date(), data.amount_total, data.payment_intent])
                         .then(response => {
-                            return conn.promise().query(`UPDATE job SET status='Đã thanh toán' WHERE id='${data.client_reference_id}'`)
+                            return conn.promise().query(`UPDATE job SET status=7 WHERE id='${data.client_reference_id}'`)
                         })
                         .then(response => {
                             console.log('Checkout successful');

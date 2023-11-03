@@ -5,6 +5,7 @@ const router = express.Router();
 router.get('/processing-by-job', OfferController.getProcessingOffer)
 router.get('/for-job', OfferController.getOffersJob);
 router.get('/by-freelancer', OfferController.getOffersByFreelancer);
+router.get('/all/by-freelancer', OfferController.getAllOffersByFreelancer);
 
 router.post("/", OfferController.createOffer);
 

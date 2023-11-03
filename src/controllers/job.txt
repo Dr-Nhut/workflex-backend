@@ -1,0 +1,12 @@
+Status Job:
+1 = Đang duyệt
+2 = Từ chối
+3 = Đang chào giá
+4 = Khóa chào giá
+5 = Đang thực hiện
+6 = Đã hoàn thành
+7 = Đã thanh toán cho admin
+8 = Admin đã thanh toán
+9 = Đã xác nhận thanh toán
+10 = Chưa nhận thanh toán
+11 = Đã đánh giá và kết thúc

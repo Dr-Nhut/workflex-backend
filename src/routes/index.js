@@ -9,8 +9,12 @@ const stripeRouter = require("./stripe.route");
 const taskRouter = require("./task.route");
 const paymentRouter = require("./payment.route");
 const evaluationRouter = require("./evaluation.route");
+const notificationRouter = require("./notification.route");
+const userRouter = require("./user.route");
+const recommendationRouter = require("./recommendation.router");
 
 function route(app) {
+    app.use('/api/user', userRouter);
     app.use('/api/auth', authRouter);
     app.use('/api/category', categoryRouter);
     app.use('/api/skill', skillRouter);
@@ -22,6 +26,8 @@ function route(app) {
     app.use('/api/stripe', stripeRouter);
     app.use('/api/payment', paymentRouter);
     app.use('/api/evaluation', evaluationRouter);
+    app.use('/api/notification', notificationRouter);
+    app.use('/api/recommendation', recommendationRouter);
 }
 
 module.exports = route;

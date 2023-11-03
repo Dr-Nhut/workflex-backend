@@ -13,9 +13,11 @@ class JobController {
     }
 
     getEmployerJob(req, res, next) {
-        const { employerId, status } = req.query;
+        const { employerId, status, comparison } = req.query;
 
-        const sql = `SELECT job.id, job.name, job.description, job.maxBudget, job.bidDeadline, job.createAt, job.duration, job.type, job.experience, job.status, job.completedAt, category.name as category, user.email, user.fullname, user.avatar FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN user ON job.employerId=user.id WHERE job.status=${status} AND job.employerId='${employerId}';`;
+        const sql = `SELECT job.id, job.name, job.description, job.maxBudget, job.bidDeadline, job.createAt, job.duration, job.type, job.experience, job.status, job.completedAt, category.name as category, user.email, user.fullname, user.avatar FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN user ON job.employerId=user.id WHERE job.status${comparison}${status} AND job.employerId='${employerId}';`;
+
+        console.log('sql ', sql);
 
         conn.promise().query(sql)
             .then(([rows, fields]) => {
@@ -24,10 +26,23 @@ class JobController {
             .catch(err => console.error(err));
     }
 
+    // getFreelancerJob(req, res) {
+    //     const { freelancerId, status } = req.query;
+
+    //     const sql = `SELECT job.id, job.name, job.description, job.maxBudget, job.bidDeadline, job.createAt, job.duration, job.type, job.experience, job.status, job.completedAt, category.name as category FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN offer ON offer.jobId=job.id WHERE offer.freelancerId='${freelancerId}' AND job.status=${status};`;
+
+    //     conn.promise().query(sql)
+    //         .then(([rows, fields]) => {
+    //             res.send(rows);
+    //         })
+    //         .catch(err => console.error(err));
+    // }
+
+
     getFreelancerJob(req, res) {
         const { freelancerId, status } = req.query;
 
-        const sql = `SELECT job.id, job.name, job.description, job.maxBudget, job.bidDeadline, job.createAt, job.duration, job.type, job.experience, job.status, job.completedAt, category.name as category FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN offer ON offer.jobId=job.id WHERE offer.freelancerId='${freelancerId}' AND job.status=${status};`;
+        const sql = `SELECT job.id, job.name, job.description, job.maxBudget, job.bidDeadline, job.createAt, job.duration, job.type, job.experience, job.status, job.completedAt, category.name as category FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN offer ON offer.jobId=job.id WHERE offer.freelancerId='${freelancerId}' AND offer.status="Đang thực hiện" AND job.status=${status};`;
 
         conn.promise().query(sql)
             .then(([rows, fields]) => {
@@ -38,7 +53,7 @@ class JobController {
 
 
     getPendingJob(req, res) {
-        const sql = "SELECT job.id, job.name, job.maxBudget, job.bidDeadline, job.createAt, category.name as category, user.email FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN user ON job.employerId=user.id WHERE job.status='Đang duyệt';";
+        const sql = "SELECT job.id, job.name, job.maxBudget, job.bidDeadline, job.createAt, category.name as category, user.email FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN user ON job.employerId=user.id WHERE job.status=1;";
         conn.promise().query(sql)
             .then(([rows, fields]) => {
                 res.send(rows);
@@ -47,7 +62,7 @@ class JobController {
     }
 
     getBiddingJob(req, res) {
-        const sql = "SELECT job.id, job.name, job.description, job.maxBudget, job.bidDeadline, job.createAt, job.duration, job.type, job.experience, category.name as category, user.email, user.fullname, user.avatar FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN user ON job.employerId=user.id WHERE job.status='Đang chào giá';";
+        const sql = "SELECT job.id, job.name, job.description, job.maxBudget, job.bidDeadline, job.createAt, job.duration, job.type, job.experience, category.name as category, user.email, user.fullname, user.avatar FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN user ON job.employerId=user.id WHERE job.status=3;";
         conn.promise().query(sql)
             .then(([rows, fields]) => {
                 res.send(rows);
@@ -57,7 +72,7 @@ class JobController {
 
     getBiddingAndLockingJob(req, res) {
         const employerId = req.query.id;
-        const sql = `SELECT job.id, job.name, job.description, job.maxBudget, job.bidDeadline, job.createAt, job.duration, job.type, job.experience, job.status, category.name as category, user.email, user.fullname, user.avatar FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN user ON job.employerId=user.id WHERE (job.status='Đang chào giá' OR job.status='Khoá chào giá') AND job.employerId='${employerId}';`;
+        const sql = `SELECT job.id, job.name, job.description, job.maxBudget, job.bidDeadline, job.createAt, job.duration, job.type, job.experience, job.status, category.name as category, user.email, user.fullname, user.avatar FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN user ON job.employerId=user.id WHERE (job.status=3 OR job.status=4) AND job.employerId='${employerId}';`;
         conn.promise().query(sql)
             .then(([rows, fields]) => {
                 res.send(rows);
@@ -66,7 +81,7 @@ class JobController {
     }
 
     getRefusedJob(req, res) {
-        const sql = "SELECT job.id, job.name, job.maxBudget, job.bidDeadline, job.createAt, job.duration, category.name as category, user.email FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN user ON job.employerId=user.id WHERE job.status='Từ chối';";
+        const sql = "SELECT job.id, job.name, job.maxBudget, job.bidDeadline, job.createAt, job.duration, category.name as category, user.email FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN user ON job.employerId=user.id WHERE job.status=2;";
         conn.promise().query(sql)
             .then(([rows, fields]) => {
                 res.send(rows);
@@ -81,7 +96,7 @@ class JobController {
 
         const sql = "INSERT INTO job (id, name, description, categoryId, employerId, maxBudget, experience, duration, bidDeadline, dateStart, type, status, createAt ) VALUES(?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         const id = crypto.randomUUID();
-        conn.promise().query(sql, [jobId, name, description, categoryId, employerId, maxBudget, experience, duration, new Date(bidDeadline), new Date(dateStart), type, 'Đang duyệt', new Date()])
+        conn.promise().query(sql, [jobId, name, description, categoryId, employerId, maxBudget, experience, duration, new Date(bidDeadline), new Date(dateStart), type, 1, new Date()])
             .then(() => {
                 if (!skills) res.json({ status: 'success', message: 'Đăng công việc thành công!' });
                 const sql = `INSERT INTO skilljob (skillId, jobId) VALUES ${skills.map(skill => `('${skill}', '${jobId}')`).join(',')}`;
@@ -95,7 +110,7 @@ class JobController {
 
     getDetailJob(req, res) {
         const id = req.params.id;
-        const sql = `SELECT job.id, job.name, job.description, job.maxBudget, job.experience, job.duration, job.bidDeadline, job.dateStart, job.type, job.status, job.createAt, job.reasonRefused, category.name as category, user.fullname, user.avatar, user.email FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN user ON job.employerId=user.id WHERE job.id='${id}';`;
+        const sql = `SELECT job.id, job.name, job.description, job.maxBudget, job.experience, job.duration, job.bidDeadline, job.dateStart, job.type, job.status, job.createAt, job.reasonRefused, category.name as category, user.id as employerId, user.fullname, user.avatar, user.email FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN user ON job.employerId=user.id WHERE job.id='${id}';`;
         conn.promise().query(sql)
             .then(([rows, fields]) => {
                 req.result = rows[0];

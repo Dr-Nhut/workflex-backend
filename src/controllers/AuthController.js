@@ -50,7 +50,7 @@ class AuthController {
                 req.id = crypto.randomUUID();
                 const avatar = sex === 'Nam' ? 'avatar-default/avatar-man.png' : 'avatar-default/avatar-woman.png'
                 const sql = "INSERT INTO user (id, fullname, email, avatar, password, address, role, sex, email_verified_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                return conn.promise().query(sql, [req.id, fullname, email, avatar, hash, address, role, sex, new Date(emailVerifiedAt)])
+                return conn.promise().query(sql, [req.id, fullname.trim(), email, avatar, hash, address, role, sex, new Date(emailVerifiedAt)])
             })
             .then(() => {
                 const { categories } = req.body;

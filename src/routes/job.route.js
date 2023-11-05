@@ -8,6 +8,8 @@ router.get("/bidnlock-jobs", JobController.getBiddingAndLockingJob);
 router.get("/refused-jobs", JobController.getRefusedJob);
 router.get("/employer-current-jobs", JobController.getEmployerJob)
 router.get("/freelancer-current-jobs", JobController.getFreelancerJob)
+router.get("/freelancer-completed-and-fail-jobs", JobController.getFreelancerCompletedAndFailJob)
+router.get("/freelancer-current-and-fail-jobs", JobController.getFreelancerCurrentAndFailJob)
 // router.get("/freelancer-current-jobs-v2", JobController.getFreelancerCurrentJobs)
 router.get("/all", JobController.getJobByStatus);
 

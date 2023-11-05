@@ -37,7 +37,7 @@ class TaskController {
         const sql = "INSERT INTO task (id, name, description, dateStart, dateEnd, contractId) VALUES(?,?,?,?,?,?);";
         conn.promise().query(sql, [id, name, description, new Date(dateStart), new Date(dateEnd), contractId])
             .then(() => {
-                res.json({ status: 'success', message: 'Nhiệm vụ mới được tạo!' });
+                res.json({ status: 'success', message: 'Nhiệm vụ mới được tạo!', name });
             })
             .catch(err => console.error(err));
     }
@@ -64,6 +64,14 @@ class TaskController {
         const sql = `UPDATE task SET name = IFNULL(?, name), description = IFNULL(?, description), dateStart = IFNULL(?, dateStart), dateEnd = IFNULL(?, dateEnd), status = IFNULL(?, status) WHERE id='${id}';`
         conn.promise().query(sql, [name, description, dateStart, dateEnd, status])
             .then(() => res.json({ message: 'Thay đổi task thành công' }))
+            .catch((err) => console.log(err));
+    }
+
+
+    deleteTask(req, res) {
+        const id = req.params.id;
+        conn.promise().query(`DELETE FROM task WHERE id='${id}';`)
+            .then(() => res.json({ message: 'Xóa nhiệm vụ thành công' }))
             .catch((err) => console.log(err));
     }
 }

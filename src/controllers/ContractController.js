@@ -10,7 +10,7 @@ class ContractController {
         const contractId = crypto.randomUUID();
 
         const sql = "INSERT INTO contract (id, employerId, offerId, signingDate) VALUES(?, ?, ?, ?)";
-        conn.promise().query(sql, [contractId, employerId, offerId, new Date])
+        conn.promise().query(sql, [contractId, employerId, offerId, new Date()])
             .then(() => {
                 res.json({ status: 'success', message: 'Tạo hợp đồng thành công!' });
             })

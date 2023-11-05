@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const conn = require('../config/db.config')
+const schedule = require('node-schedule');
 
 class OfferController {
     createOffer(req, res, next) {
@@ -50,11 +51,24 @@ class OfferController {
 
     update(req, res) {
         const id = req.params.id;
-        const { price = null, description = null, plan = null, dateEnd = null, status = null } = req.body;
+        const { jobId, price = null, description = null, plan = null, dateEnd = null, status = null } = req.body;
 
         const sql = `UPDATE offer SET price = IFNULL(?, price), description = IFNULL(?, description), plan = IFNULL(?, plan), dateEnd = IFNULL(?, dateEnd), status = IFNULL(?, status) WHERE id = '${id}'; `
-        conn.promise().query(sql, [price, description, plan, dateEnd, status])
-            .then(() => res.json({ message: 'Thay đổi chào giá thành công' }))
+        conn.promise().query(sql, [price, description, plan, dateEnd ? new Date(dateEnd) : null, status])
+            .then(() => {
+                if (status === 'Đang thực hiện') {
+                    console.log(dateEnd);
+                    const date = new Date(dateEnd);
+                    const job = schedule.scheduleJob(date, function () {
+                        console.log('Khoá công việc');
+                        const sql = `UPDATE job SET status=0 WHERE id='${jobId}';`
+                        conn.promise().query(sql)
+                            .then(() => res.json({ message: 'Đã thay đổi trạng thái công việc' }))
+                            .catch((err) => console.log(err));
+                    });
+                }
+                res.json({ message: 'Thay đổi chào giá thành công' })
+            })
             .catch((err) => console.log(err));
     }
 }

@@ -4,9 +4,8 @@ const conn = require('../config/db.config')
 class EvaluationController {
     getEvaluation(req, res) {
         const jobId = req.params.jobId;
-        console.log(jobId, req.userId);
 
-        const sql = `SELECT * from evaluation WHERE jobId='${jobId}' AND userId='${req.userId}'`;
+        const sql = `SELECT * from evaluation WHERE jobId='${jobId}' AND senderId='${req.userId}'`;
         conn.promise().query(sql)
             .then(([rows, fields]) => {
                 res.json(rows[0])
@@ -17,7 +16,7 @@ class EvaluationController {
     getAllEvaluationByUser(req, res) {
         const userId = req.params.userId;
 
-        const sql = `SELECT * from evaluation WHERE userId='${userId}'`;
+        const sql = `SELECT evaluation.id, evaluation.jobId, evaluation.stars, evaluation.comment, evaluation.createAt, user.fullname, user.avatar from evaluation LEFT JOIN user ON evaluation.senderId=user.id WHERE receiverId='${userId}'`;
         conn.promise().query(sql)
             .then(([rows, fields]) => {
                 res.json(rows)
@@ -27,12 +26,12 @@ class EvaluationController {
 
     createEvaluation(req, res) {
         const jobId = req.params.jobId;
-        const { stars, comment } = req.body;
+        const { stars, comment, receiverId } = req.body;
         const id = crypto.randomUUID();
         console.log(req.userId);
 
-        const sql = 'INSERT INTO evaluation VALUES(?,?,?,?, ?);';
-        conn.promise().query(sql, [id, jobId, stars, comment, req.userId])
+        const sql = 'INSERT INTO evaluation VALUES(?,?,?,?,?,?,?);';
+        conn.promise().query(sql, [id, jobId, stars, comment, req.userId, receiverId, new Date()])
             .then(response => {
                 res.json({ message: 'Gửi nhận xét thành công' })
             })

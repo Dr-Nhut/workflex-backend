@@ -15,7 +15,7 @@ class JobController {
     getEmployerJob(req, res, next) {
         const { employerId, status, comparison } = req.query;
 
-        const sql = `SELECT job.id, job.name, job.description, job.maxBudget, job.bidDeadline, job.createAt, job.duration, job.type, job.experience, job.status, job.completedAt, category.name as category, user.email, user.fullname, user.avatar FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN user ON job.employerId=user.id WHERE job.status${comparison}${status} AND job.employerId='${employerId}';`;
+        const sql = `SELECT job.id, job.name, job.description, job.maxBudget, job.bidDeadline, job.createAt, job.dateStart, job.duration, job.type, job.experience, job.status, job.completedAt,job.employerId, category.name as category, user.email, user.fullname, user.avatar FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN user ON job.employerId=user.id WHERE job.status${comparison}${status} AND job.employerId='${employerId}';`;
 
         console.log('sql ', sql);
 
@@ -42,7 +42,31 @@ class JobController {
     getFreelancerJob(req, res) {
         const { freelancerId, status } = req.query;
 
-        const sql = `SELECT job.id, job.name, job.description, job.maxBudget, job.bidDeadline, job.createAt, job.duration, job.type, job.experience, job.status, job.completedAt, category.name as category FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN offer ON offer.jobId=job.id WHERE offer.freelancerId='${freelancerId}' AND offer.status="Đang thực hiện" AND job.status=${status};`;
+        const sql = `SELECT job.id, job.name, job.description, job.maxBudget, job.bidDeadline, job.createAt, job.duration, job.dateStart, job.type, job.experience, job.status, job.completedAt, job.employerId, category.name as category FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN offer ON offer.jobId=job.id WHERE offer.freelancerId='${freelancerId}' AND offer.status="Đang thực hiện" AND job.status=${status};`;
+
+        conn.promise().query(sql)
+            .then(([rows, fields]) => {
+                res.send(rows);
+            })
+            .catch(err => console.error(err));
+    }
+
+    getFreelancerCompletedAndFailJob(req, res) {
+        const { freelancerId } = req.query;
+
+        const sql = `SELECT job.id, job.name, job.description, job.maxBudget, job.bidDeadline, job.createAt, job.dateStart, job.duration, job.type, job.experience, job.status, job.completedAt, category.name as category FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN offer ON offer.jobId=job.id WHERE offer.freelancerId='${freelancerId}' AND offer.status="Đang thực hiện" AND (job.status >= 6 OR job.status = 0);`;
+
+        conn.promise().query(sql)
+            .then(([rows, fields]) => {
+                res.send(rows);
+            })
+            .catch(err => console.error(err));
+    }
+
+    getFreelancerCurrentAndFailJob(req, res) {
+        const { freelancerId } = req.query;
+
+        const sql = `SELECT job.id, job.name, job.description, job.maxBudget, job.bidDeadline, job.createAt, job.duration, job.type, job.experience, job.status, job.completedAt, category.name as category, user.id as employerId FROM job LEFT JOIN user ON job.employerId = user.id LEFT JOIN category ON job.categoryId=category.id LEFT JOIN offer ON offer.jobId=job.id WHERE offer.freelancerId='${freelancerId}' AND offer.status="Đang thực hiện" AND (job.status >= 5 OR job.status = 0);`;
 
         conn.promise().query(sql)
             .then(([rows, fields]) => {
@@ -62,7 +86,7 @@ class JobController {
     }
 
     getBiddingJob(req, res) {
-        const sql = "SELECT job.id, job.name, job.description, job.maxBudget, job.bidDeadline, job.createAt, job.duration, job.type, job.experience, category.name as category, user.email, user.fullname, user.avatar FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN user ON job.employerId=user.id WHERE job.status=3;";
+        const sql = "SELECT job.id, job.name, job.description, job.maxBudget, job.bidDeadline, job.createAt, job.duration, job.type, job.experience, category.name as category, user.id as employerId, user.email, user.fullname, user.avatar FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN user ON job.employerId=user.id WHERE job.status=3;";
         conn.promise().query(sql)
             .then(([rows, fields]) => {
                 res.send(rows);
@@ -110,7 +134,7 @@ class JobController {
 
     getDetailJob(req, res) {
         const id = req.params.id;
-        const sql = `SELECT job.id, job.name, job.description, job.maxBudget, job.experience, job.duration, job.bidDeadline, job.dateStart, job.type, job.status, job.createAt, job.reasonRefused, category.name as category, user.id as employerId, user.fullname, user.avatar, user.email FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN user ON job.employerId=user.id WHERE job.id='${id}';`;
+        const sql = `SELECT job.id, job.name, job.description, job.maxBudget, job.experience, job.duration, job.bidDeadline, job.dateStart, job.type, job.status, job.createAt, job.reasonRefused, category.name as category, category.id as categoryId, user.id as employerId, user.fullname, user.avatar, user.email FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN user ON job.employerId=user.id WHERE job.id='${id}';`;
         conn.promise().query(sql)
             .then(([rows, fields]) => {
                 req.result = rows[0];
@@ -127,7 +151,7 @@ class JobController {
         const { name = null, description = null, categoryId = null, employerId = null, maxBudget = null, experience = null, duration = null, bidDeadline = null, dateStart = null, type = null, status = null, reasonRefused = null, completedAt = null } = req.body;
 
         const sql = `UPDATE job SET name = IFNULL(?, name), description = IFNULL(?, description), categoryId = IFNULL(?, categoryId), employerId = IFNULL(?, employerId), maxBudget = IFNULL(?, maxBudget), experience = IFNULL(?, experience), duration = IFNULL(?, duration), bidDeadline = IFNULL(?, bidDeadline), dateStart = IFNULL(?, dateStart), type = IFNULL(?, type), status = IFNULL(?, status), reasonRefused = IFNULL(?, reasonRefused), completedAt = IFNULL(?, completedAt) WHERE id='${id}';`
-        conn.promise().query(sql, [name, description, categoryId, employerId, maxBudget, experience, duration, new Date(bidDeadline), new Date(dateStart), type, status, reasonRefused, new Date(completedAt)])
+        conn.promise().query(sql, [name, description, categoryId, employerId, maxBudget, experience, duration, bidDeadline ? new Date(bidDeadline) : null, dateStart ? new Date(dateStart) : null, type, status, reasonRefused, completedAt ? new Date(completedAt) : null])
             .then(() => res.json({ message: 'Công việc đã được thay đổi' }))
             .catch((err) => console.log(err));
     }

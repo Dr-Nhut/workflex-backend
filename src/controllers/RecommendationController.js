@@ -13,7 +13,7 @@ class RecommendationController {
             // 2. Get scores for freelancer
             .then(async ([rows, fields]) => {
                 return Promise.all(rows.map((row) => {
-                    const sql = `SELECT offer.freelancerId, job.id, job.status FROM offer LEFT JOIN job ON offer.jobId=job.id WHERE offer.freelancerId='${row.userId}' AND offer.status='Đang thực hiện'`
+                    const sql = `SELECT offer.freelancerId, job.id, job.status, job.employerId FROM offer LEFT JOIN job ON offer.jobId=job.id WHERE offer.freelancerId='${row.userId}' AND offer.status='Đang thực hiện'`
                     return conn.promise().query(sql)
                 }))
 
@@ -26,15 +26,15 @@ class RecommendationController {
                         freelancerId: job.at(0).freelancerId,
                         job: job.map(item => ({
                             id: item.id,
-                            status: item.status
+                            status: item.status,
+                            employerId: item.employerId
                         }))
                     })
                 })
 
-
                 return Promise.all(req.result.map((listJobOfFreelancer) => {
 
-                    const sql = `SELECT stars FROM evaluation WHERE userId!='${listJobOfFreelancer.freelancerId}' AND (${listJobOfFreelancer.job.map(item => `jobId='${item.id}'`).join(' OR ')})`
+                    const sql = `SELECT stars FROM evaluation WHERE senderId!='${listJobOfFreelancer.freelancerId}' AND (${listJobOfFreelancer.job.map(item => `jobId='${item.id}'`).join(' OR ')})`
 
                     return conn.promise().query(sql)
                 }))
@@ -47,9 +47,32 @@ class RecommendationController {
 
                     req.result.at(index).score = numCompletedJobs * averageStars - (req.result.at(index).job.length - numCompletedJobs) * 5;
                 });
-                // 3. Get top 10 freelancer 
+
+                // 3. Rehired
                 req.result = req.result.filter(item => item.score)
-                console.log(req.result.sort((a, b) => b.score - a.score));
+
+                req.result.map(item => {
+                    const jobs = item.job;
+                    let duplicate = 0
+                    const arr = jobs.filter((job, index) => {
+                        const findElement = [...jobs]
+                            .slice(0, index)
+                            .filter((item) => item.employerId === job.employerId)
+
+                        if (findElement.length === 0) return job
+                        else {
+                            duplicate += findElement.length
+                        }
+                    })
+
+                    item.score += item.score * (duplicate / arr.length)
+                    return item
+                })
+
+
+
+                // 4.Get top 10 freelancer
+                req.result.sort((a, b) => b.score - a.score)
 
                 res.json(req.result.slice(0.10))
 

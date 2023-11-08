@@ -17,7 +17,6 @@ class JobController {
 
         const sql = `SELECT job.id, job.name, job.description, job.maxBudget, job.bidDeadline, job.createAt, job.dateStart, job.duration, job.type, job.experience, job.status, job.completedAt,job.employerId, category.name as category, user.email, user.fullname, user.avatar FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN user ON job.employerId=user.id WHERE job.status${comparison}${status} AND job.employerId='${employerId}';`;
 
-        console.log('sql ', sql);
 
         conn.promise().query(sql)
             .then(([rows, fields]) => {
@@ -86,7 +85,9 @@ class JobController {
     }
 
     getBiddingJob(req, res) {
-        const sql = "SELECT job.id, job.name, job.description, job.maxBudget, job.bidDeadline, job.createAt, job.duration, job.type, job.experience, category.name as category, user.id as employerId, user.email, user.fullname, user.avatar FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN user ON job.employerId=user.id WHERE job.status=3;";
+        const { budget, category } = req.query
+        const sql = `SELECT job.id, job.name, job.description, job.maxBudget, job.bidDeadline, job.createAt, job.duration, job.type, job.experience, category.name as category, user.id as employerId, user.email, user.fullname, user.avatar FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN user ON job.employerId=user.id WHERE job.status=3 ${budget ? `AND job.maxBudget <= ${+budget}` : ''} ${category ? Array.isArray(category) ? `AND (${category.map(item => `category.id='${item}'`).join(' OR ')})` : `AND category.id='${category}'` : ''};`;
+
         conn.promise().query(sql)
             .then(([rows, fields]) => {
                 res.send(rows);
@@ -153,6 +154,13 @@ class JobController {
         const sql = `UPDATE job SET name = IFNULL(?, name), description = IFNULL(?, description), categoryId = IFNULL(?, categoryId), employerId = IFNULL(?, employerId), maxBudget = IFNULL(?, maxBudget), experience = IFNULL(?, experience), duration = IFNULL(?, duration), bidDeadline = IFNULL(?, bidDeadline), dateStart = IFNULL(?, dateStart), type = IFNULL(?, type), status = IFNULL(?, status), reasonRefused = IFNULL(?, reasonRefused), completedAt = IFNULL(?, completedAt) WHERE id='${id}';`
         conn.promise().query(sql, [name, description, categoryId, employerId, maxBudget, experience, duration, bidDeadline ? new Date(bidDeadline) : null, dateStart ? new Date(dateStart) : null, type, status, reasonRefused, completedAt ? new Date(completedAt) : null])
             .then(() => res.json({ message: 'Công việc đã được thay đổi' }))
+            .catch((err) => console.log(err));
+    }
+
+    delete(req, res, next) {
+        const id = req.params.id;
+        conn.promise().query(`DELETE FROM job WHERE id='${id}'`)
+            .then(() => res.json({ message: 'Đã xóa công việc.' }))
             .catch((err) => console.log(err));
     }
 }

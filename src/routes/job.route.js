@@ -19,6 +19,7 @@ router.get("/:id", JobController.getDetailJob);
 router.post("/create", JobController.create);
 
 router.patch('/:id', JobController.update);
+router.delete('/:id', JobController.delete);
 
 
 module.exports = router;

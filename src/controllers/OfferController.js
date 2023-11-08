@@ -71,6 +71,13 @@ class OfferController {
             })
             .catch((err) => console.log(err));
     }
+
+    delete(req, res, next) {
+        const id = req.params.id;
+        conn.promise().query(`DELETE FROM offer WHERE id='${id}'`)
+            .then(() => res.json({ message: 'Đã xóa chào giá.' }))
+            .catch((err) => console.log(err));
+    }
 }
 
 module.exports = new OfferController;

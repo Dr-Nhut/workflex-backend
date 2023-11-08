@@ -8,7 +8,7 @@ router.get('/by-freelancer', OfferController.getOffersByFreelancer);
 router.get('/all/by-freelancer', OfferController.getAllOffersByFreelancer);
 
 router.post("/", OfferController.createOffer);
-
 router.patch('/:id', OfferController.update);
+router.delete('/:id', OfferController.delete);
 
 module.exports = router;

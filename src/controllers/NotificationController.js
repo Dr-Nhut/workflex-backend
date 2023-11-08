@@ -6,7 +6,7 @@ class NotificationController {
         const { senderId, receiverId, type, description } = req.body;
         const id = crypto.randomUUID();
 
-        const sql = 'INSERT INTO notification VALUES(?,?,?,?,?, ?, ?);';
+        const sql = 'INSERT INTO notification VALUES(?,?,?,?,?,?,?);';
         conn.promise().query(sql, [id, senderId, receiverId, type, description, 0, new Date()])
             .then(response => {
                 res.json({ message: 'Lưu thông báo thành công' })

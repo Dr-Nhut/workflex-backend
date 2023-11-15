@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const conn = require('../config/db.config')
 const schedule = require('node-schedule');
+const { blockJob } = require('../utils/schedule');
 
 class OfferController {
     createOffer(req, res, next) {
@@ -57,15 +58,15 @@ class OfferController {
         conn.promise().query(sql, [price, description, plan, dateEnd ? new Date(dateEnd) : null, status])
             .then(() => {
                 if (status === 'Đang thực hiện') {
-                    console.log(dateEnd);
-                    const date = new Date(dateEnd);
-                    const job = schedule.scheduleJob(date, function () {
-                        console.log('Khoá công việc');
-                        const sql = `UPDATE job SET status=0 WHERE id='${jobId}';`
-                        conn.promise().query(sql)
-                            .then(() => res.json({ message: 'Đã thay đổi trạng thái công việc' }))
-                            .catch((err) => console.log(err));
-                    });
+                    const dateEnd = new Date(dateEnd);
+                    var day = 60 * 60 * 24 * 1000;
+                    const date = new Date(dateEnd.getTime() + day);
+                    const job = schedule.scheduleJob(date, () => blockJob(jobId));
+
+                    // Save schedule in db
+                    const sql = "INSERT INTO schedule (id, date, type, jobId) VALUES (?, ?, ?, ?)"
+                    conn.promise().query(sql, [crypto.randomUUID(), date, 'blockJob', jobId])
+                        .then(() => console.log('Saved schedule'))
                 }
                 res.json({ message: 'Thay đổi chào giá thành công' })
             })

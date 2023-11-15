@@ -1,15 +1,58 @@
 const crypto = require('crypto');
 const conn = require('../config/db.config');
 
+
 class UserController {
     getInfor(req, res) {
         const userId = req.params.id;
 
-        conn.promise().query(`SELECT fullname, avatar, email, role FROM user WHERE user.id='${userId}'`)
+        conn.promise().query(`SELECT fullname, avatar, email, role, bio FROM user WHERE user.id='${userId}'`)
             .then(([rows, fields]) => {
                 res.json(rows[0])
             })
             .catch((err) => console.error(err));
+    }
+
+    updateAvatar(req, res) {
+        const userId = req.userId;
+        const avatar = req.file.filename;
+
+        const sql = `UPDATE user SET avatar='uploads/avatar/${avatar}' WHERE id='${userId}'`
+
+        conn.promise().query(sql)
+            .then(() => {
+                res.json({ message: 'Đổi ảnh đại diện thành công', avatar: `uploads/avatar/${avatar}` })
+            })
+            .catch((err) => console.error(err));
+    }
+
+    updateInfor(req, res) {
+        const userId = req.userId;
+
+        const { fullname = null, email = null, address = null, bio = null, bank_account = null, sex = null } = req.body;
+
+        const sql = `UPDATE user SET fullname = IFNULL(?, fullname), email = IFNULL(?, email), address = IFNULL(?, address), bio = IFNULL(?, bio), bank_account = IFNULL(?, bank_account), sex = IFNULL(?, sex) WHERE id='${userId}';`
+        conn.promise().query(sql, [fullname, email, address, bio, bank_account, sex])
+            .then(() => res.json({ message: 'Thông tin user đã được thay đổi' }))
+            .catch((err) => console.log(err));
+    }
+
+
+    getFreelancerInfor(req, res) {
+        const id = req.query.freelancerId;
+
+        console.log(id);
+
+
+        const sql = `SELECT id, fullname, avatar, address, bio FROM user WHERE id='${id}';`
+
+        console.log(sql);
+
+        conn.promise().query(sql)
+            .then(([rows, fields]) => {
+                res.json(rows[0])
+            })
+            .catch(err => console.log(err))
     }
 }
 

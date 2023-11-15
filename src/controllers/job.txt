@@ -11,3 +11,10 @@ Status Job:
 9 = Đã xác nhận thanh toán
 10 = Chưa nhận thanh toán
 11 = Đã đánh giá và kết thúc
+
+**********************************************
+Lọc đề xuất công việc
+1. Lấy tất cả User cùng chào giá cho cùng công việc
+2. Lấy tất cả công việc đang được chào giá bởi các user đó
+3. Lọc các job không thuộc lĩnh vực của freelancer
+4. Get các job trùng lặp từ lớn tới bé

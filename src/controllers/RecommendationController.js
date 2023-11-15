@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const conn = require('../config/db.config');
 const { response } = require('express');
 const { fields } = require('../config/upload.config');
+const { fileURLToPath } = require('url');
 
 class RecommendationController {
     getFreelancerForNewJob(req, res) {
@@ -78,6 +79,110 @@ class RecommendationController {
 
             })
             .catch(err => console.error(err));
+    }
+
+    getJobsThroughOfferForFreelancer(req, res, next) {
+        const userId = req.userId;
+        req.result = [];
+
+        // Get jobs offer
+        const sql = `SELECT jobId FROM offer WHERE freelancerId='${userId}' AND status='Đang duyệt'`
+
+        conn.promise().query(sql)
+            .then(([rows, fields]) => {
+                //job dang chao gia
+                req.biddingJobs = rows;
+                return rows
+            })
+            .then(() => {
+                const sql = `SELECT usercategory.categoryId FROM usercategory LEFT JOIN category ON category.id=usercategory.categoryId WHERE userId='${userId}'`;
+                return conn.promise().query(sql)
+            })
+            .then(([rows, fields]) => {
+                req.categories = rows.map(item => item.categoryId);
+                if (req.biddingJobs.length > 0) {
+                    const sql = `SELECT DISTINCT freelancerId FROM offer WHERE (${req.biddingJobs.length.map(item => `jobId='${item.jobId}'`).join(' OR ')}) AND freelancerId!='${userId}'`
+
+                    return conn.promise().query(sql)
+                }
+                else {
+                    return new Promise((resolve, reject) => reject());
+                }
+            })
+            .then(([rows, fields]) => {
+                // ds user cung chao gia
+                const sql = `SELECT jobId FROM offer WHERE status='Đang duyệt' AND (${rows.map(row => `freelancerId='${row.freelancerId}'`).join(' OR ')}) AND (${req.biddingJobs.map(job => `jobId!='${job.jobId}'`).join(' AND ')})`
+
+                return conn.promise().query(sql)
+            })
+            .then(([rows, fields]) => {
+                req.biddingList = rows;
+                const sql = `SELECT * FROM job WHERE ${req.biddingList.map(job => `id='${job.jobId}'`).join(' OR ')}`
+
+                return conn.promise().query(sql)
+            })
+            .then(([rows, fields]) => {
+                const similarJobs = rows.filter(item => req.categories.includes(item.categoryId))
+
+                const newSimilarJobs = similarJobs.map(item => item.id)
+
+                const result = [];
+                newSimilarJobs.forEach((job, index) => {
+                    const isAppear = [...newSimilarJobs].slice(0, index).filter(item => item === job).length > 0
+
+                    if (!isAppear) {
+                        result.push({ job, number: newSimilarJobs.filter(item => item === job).length })
+                    }
+                })
+                const newResult = result.sort((a, b) => a.number - b.number).slice(0, 10)
+                console.log('recommendation1: ', newResult);
+                if (newResult.length === 10) {
+                    res.json(newResult.map(item => item.job))
+                }
+                else {
+
+                    req.result = newResult.map(item => item.job)
+                    next();
+                }
+            })
+            .catch(() => next());
+    }
+
+    getJobsThroughCategory(req, res, next) {
+        console.log('result: ', req.result);
+        const LIMIT = 10 - req.result.length;
+        const sql = `SELECT job.id, COUNT(offer.id) FROM offer LEFT JOIN job ON offer.jobId=job.id WHERE job.status=3 ${req.biddingJobs.length > 0 ? `AND (${req.biddingJobs.map(item => `job.id!='${item.jobId}'`).join(' AND ')})` : ''} AND (${req.categories.map(category => `job.categoryId='${category}'`).join(' OR ')})  GROUP BY job.id ORDER BY COUNT(offer.id) DESC;`
+
+        console.log(sql);
+
+        conn.promise().query(sql)
+            .then(([rows, fields]) => {
+                console.log('recommendation2: ', rows)
+                const idRows = rows.map(row => row.id)
+                const newRows = idRows.filter(id => !req.result.includes(id)).slice(0, LIMIT)
+                req.result = [...req.result, ...newRows];
+                if (req.result.length > 0) {
+                    const sql = `SELECT id, name, maxBudget FROM job WHERE ${req.result.map(id => `id='${id}'`).join(' OR ')}`
+                    console.log(sql);
+                    conn.promise().query(sql)
+                        .then(([rows, fields]) => {
+                            res.json(rows)
+                        })
+                }
+                else {
+                    next()
+                }
+            })
+            .catch(err => console.log(err))
+    }
+
+    getNewJobs(req, res) {
+        const sql = "SELECT id, name, maxBudget FROM job ORDER BY createAt LIMIT 10"
+        conn.promise().query(sql)
+            .then(([rows, fields]) => {
+                res.json(rows)
+            })
+            .catch(err => console.log(err))
     }
 }
 

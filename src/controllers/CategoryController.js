@@ -16,7 +16,7 @@ class CategoryController {
         const sql = `SELECT * FROM usercategory LEFT JOIN category ON category.id=usercategory.categoryId WHERE userId='${userId}'`;
         conn.promise().query(sql)
             .then(([rows, fields]) => {
-                res.send(rows[0]);
+                res.send(rows);
             })
             .catch(err => console.error(err));
     }

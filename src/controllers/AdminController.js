@@ -1,7 +1,8 @@
 const conn = require('../config/db.config')
 const schedule = require('node-schedule');
-const { all } = require('../routes/admin.route');
 require('dotenv').config()
+const crypto = require('crypto');
+const { blockBidding } = require('../utils/schedule');
 
 class AdminController {
     approvalJob(req, res, next) {
@@ -18,15 +19,15 @@ class AdminController {
                     var day = 60 * 60 * 24 * 1000;
 
                     const date = new Date(bidDeadlineDate.getTime() + day)
-                    const job = schedule.scheduleJob(date, function () {
-                        console.log('Khoá chào giá');
-                        const sql = `UPDATE job SET status=4 WHERE id='${id}';`
-                        conn.promise().query(sql)
-                            .then(() => res.json({ message: 'Đã khóa chào giá' }))
-                            .catch((err) => console.log(err));
-                    });
+
+                    const job = schedule.scheduleJob(date, () => blockBidding(id));
+
+                    // Save schedule in db
+                    const sql = "INSERT INTO schedule (id, date, type, jobId) VALUES (?, ?, ?, ?)"
+                    conn.promise().query(sql, [crypto.randomUUID(), date, 'blockBidding', id])
+                        .then(() => console.log('Saved schedule'))
                 }
-                res.json({ message: `${approval ? 'Đã xét duyệt công việc' : 'Đã từ chối công việc'}`, type: `${approval ? 'approval' : 'refused'}` })
+                res.json({ message: `${approval ? 'Đã xét duyệt công việc' : 'Đã từ chối công việc'}`, type: `${approval ? 'approval' : 'refused'} ` })
             })
             .catch((err) => console.log(err));
     }
@@ -39,9 +40,9 @@ class AdminController {
         for (let jobName in allJobs) {
             if (allJobs.hasOwnProperty(jobName)) {
                 const job = allJobs[jobName];
-                console.log(`Tên lịch trình: ${job.name}`);
-                console.log(`Lịch trình: ${job.spec}`);
-                console.log(`Thời gian được lên lịch: ${job.nextInvocation()}`);
+                console.log(`Tên lịch trình: ${job.name} `);
+                console.log(`Lịch trình: ${job.spec} `);
+                console.log(`Thời gian được lên lịch: ${job.nextInvocation()} `);
                 console.log('-------------------------');
             }
         }

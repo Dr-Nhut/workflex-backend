@@ -49,6 +49,16 @@ class AdminController {
 
         res.json({ message: 'check' })
     }
+
+    blockAccount(req, res, next) {
+        const userId = req.params.id;
+        const status = req.body.status;
+
+        const sql = `UPDATE user SET status=${status} WHERE id='${userId}';`
+        conn.promise().query(sql)
+            .then(() => res.json({ message: 'Thông tin user đã được thay đổi' }))
+            .catch((err) => console.log(err));
+    }
 }
 
 module.exports = new AdminController;

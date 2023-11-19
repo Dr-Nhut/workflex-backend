@@ -3,6 +3,16 @@ const conn = require('../config/db.config');
 
 
 class UserController {
+    getAllAcccount(req, res) {
+        const ADMIN = 'adm'
+        const sql = `SELECT id, fullname, avatar, email, role, status FROM user WHERE role != '${ADMIN}';`
+        conn.promise().query(sql)
+            .then(([rows, fields]) => {
+                res.json(rows)
+            })
+            .catch(err => console.error(err));
+    }
+
     getInfor(req, res) {
         const userId = req.params.id;
 

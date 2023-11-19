@@ -95,7 +95,6 @@ class AuthController {
                             message: "Tài khoản hoặc mật khẩu không đúng",
                         });
                     }
-                    console.log('continue');
                     const token = jwt.sign(
                         {
                             userId: rows[0].id
@@ -103,19 +102,27 @@ class AuthController {
                         process.env.JWT_KEY,
                         { expiresIn: "365d" }
                     );
-                    const user = {
-                        id: rows[0].id,
-                        fullname: rows[0].fullname,
-                        email: rows[0].email,
-                        avatar: rows[0].avatar,
-                        role: rows[0].role,
-                        address: rows[0].address,
+                    if (rows[0].status === 1) {
+                        res.json({
+                            status: 'error',
+                            message: 'Tài khoản của bạn đang bị khóa'
+                        })
                     }
-                    res.json({
-                        status: 'success',
-                        user,
-                        token,
-                    });
+                    else {
+                        const user = {
+                            id: rows[0].id,
+                            fullname: rows[0].fullname,
+                            email: rows[0].email,
+                            avatar: rows[0].avatar,
+                            role: rows[0].role,
+                            address: rows[0].address,
+                        }
+                        res.json({
+                            status: 'success',
+                            user,
+                            token,
+                        });
+                    }
                 }
                 else {
                     return res.json({
@@ -129,7 +136,7 @@ class AuthController {
 
     getUser(req, res) {
         const token = req.cookies.token;
-        console.log(token);
+
         jwt.verify(token, process.env.JWT_KEY, (err, decoded) => {
             if (err) res.status(404).send('Invalid token');
             if (decoded) {

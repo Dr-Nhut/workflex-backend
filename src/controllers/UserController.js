@@ -13,6 +13,15 @@ class UserController {
             .catch(err => console.error(err));
     }
 
+    getAllFreelancers(req, res) {
+        const sql = `SELECT id, fullname, avatar, email, role, status FROM user WHERE role='fre';`
+        conn.promise().query(sql)
+            .then(([rows, fields]) => {
+                res.json(rows)
+            })
+            .catch(err => console.error(err));
+    }
+
     getInfor(req, res) {
         const userId = req.params.id;
 

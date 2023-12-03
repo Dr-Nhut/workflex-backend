@@ -19,7 +19,7 @@ class OfferController {
 
     getOffersJob(req, res) {
         const id = req.query.id;
-        conn.promise().query(`SELECT offer.id, offer.price, offer.description, offer.plan, offer.dateEnd, offer.jobId, offer.freelancerId, offer.status, offer.createAt, user.fullname, user.email as freelancerEmail, user.avatar FROM offer LEFT JOIN user ON offer.freelancerId = user.id WHERE jobId='${id}'`)
+        conn.promise().query(`SELECT offer.id, offer.price, offer.description, offer.plan, offer.dateEnd, offer.jobId, offer.freelancerId, offer.status, offer.createAt, user.fullname, user.email as freelancerEmail, user.avatar FROM offer LEFT JOIN user ON offer.freelancerId = user.id WHERE jobId='${id}' ORDER BY offer.createAt`)
             .then(([rows, fields]) => res.json(rows))
             .catch((err => console.error(err)));
     }

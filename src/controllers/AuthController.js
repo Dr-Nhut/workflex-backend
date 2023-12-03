@@ -44,13 +44,13 @@ class AuthController {
     }
 
     registerUser(req, res, next) {
-        const { fullname, email, password, address, role, emailVerifiedAt, sex, bank_account } = req.body;
+        const { fullname, email, password, address, role, emailVerifiedAt, sex, bank_account, phone } = req.body;
         bcrypt.hash(password, 10)
             .then(hash => {
                 req.id = crypto.randomUUID();
                 const avatar = sex === 'Nam' ? 'avatar-default/avatar-man.png' : 'avatar-default/avatar-woman.png'
-                const sql = "INSERT INTO user (id, fullname, email, avatar, password, address, role, sex, bank_account, email_verified_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                return conn.promise().query(sql, [req.id, fullname.trim(), email, avatar, hash, address, role, sex, bank_account, new Date(emailVerifiedAt)])
+                const sql = "INSERT INTO user (id, fullname, email, avatar, password, address, role, sex, bank_account, phone, email_verified_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                return conn.promise().query(sql, [req.id, fullname.trim(), email, avatar, hash, address, role, sex, bank_account, phone, new Date(emailVerifiedAt)])
             })
             .then(() => {
                 const { categories } = req.body;

@@ -27,7 +27,7 @@ class AdminController {
                     conn.promise().query(sql, [crypto.randomUUID(), date, 'blockBidding', id])
                         .then(() => console.log('Saved schedule'))
                 }
-                res.json({ message: `${approval ? 'Đã xét duyệt công việc' : 'Đã từ chối công việc'}`, type: `${approval ? 'approval' : 'refused'} ` })
+                res.json({ message: `${approval ? 'Đã xét duyệt công việc' : 'Đã từ chối công việc'}`, type: `${approval ? 'approval' : 'refused'}` })
             })
             .catch((err) => console.log(err));
     }

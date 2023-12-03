@@ -17,7 +17,6 @@ class RecommendationController {
                     const sql = `SELECT offer.freelancerId, job.id, job.status, job.employerId FROM offer LEFT JOIN job ON offer.jobId=job.id WHERE offer.freelancerId='${row.userId}' AND offer.status='Đang thực hiện'`
                     return conn.promise().query(sql)
                 }))
-
             })
             .then((response) => {
                 const listJobOfFreelancers = response.map((element) => element[0])
@@ -70,10 +69,12 @@ class RecommendationController {
                     return item
                 })
 
-
-
                 // 4.Get top 10 freelancer
                 req.result.sort((a, b) => b.score - a.score)
+
+                req.result = req.result.map((item) => ({ freelancerId: item.freelancerId, score: item.score }))
+
+                console.log(req.result);
 
                 res.json(req.result.slice(0.10))
 
@@ -151,7 +152,7 @@ class RecommendationController {
     getJobsThroughCategory(req, res, next) {
         console.log('result: ', req.result);
         const LIMIT = 10 - req.result.length;
-        const sql = `SELECT job.id, COUNT(offer.id) FROM offer LEFT JOIN job ON offer.jobId=job.id WHERE job.status=3 ${req.biddingJobs.length > 0 ? `AND (${req.biddingJobs.map(item => `job.id!='${item.jobId}'`).join(' AND ')})` : ''} AND (${req.categories.map(category => `job.categoryId='${category}'`).join(' OR ')})  GROUP BY job.id ORDER BY COUNT(offer.id) DESC;`
+        const sql = `SELECT job.id, COUNT(offer.id) FROM offer LEFT JOIN job ON offer.jobId=job.id WHERE job.status=3 ${req.biddingJobs.length > 0 ? `AND (${req.biddingJobs.map(item => `job.id!='${item.jobId}'`).join(' AND ')})` : ''} AND (${req.categories.map(category => `job.categoryId='${category}'`).join(' OR ')}) GROUP BY job.id ORDER BY COUNT(offer.id) DESC;`
 
         console.log(sql);
 

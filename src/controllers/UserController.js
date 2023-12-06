@@ -22,6 +22,15 @@ class UserController {
             .catch(err => console.error(err));
     }
 
+    getAllFreelancersByCategory(req, res) {
+        const categoryId = req.query.categoryId;
+        const sql = `SELECT user.id FROM usercategory LEFT JOIN user ON usercategory.userId=user.id WHERE categoryId='${categoryId}' AND user.role='fre'`;
+
+        conn.promise().query(sql)
+            .then(([rows, fields]) => res.json(rows))
+            .catch((err) => console.error(err));
+    }
+
     getInfor(req, res) {
         const userId = req.params.id;
 

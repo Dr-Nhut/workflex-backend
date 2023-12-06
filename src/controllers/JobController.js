@@ -74,7 +74,7 @@ class JobController {
     getBiddingJob(req, res) {
         const { budget, category, q = '' } = req.query
 
-        const sql = `SELECT job.id, job.name, job.description, job.maxBudget, job.bidDeadline, job.createAt, job.duration, job.type, job.experience, category.name as category, user.id as employerId, user.email, user.fullname, user.avatar FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN user ON job.employerId=user.id WHERE job.status=3 ${budget ? `AND job.maxBudget <= ${+budget}` : ''} ${category ? Array.isArray(category) ? `AND (${category.map(item => `category.id='${item}'`).join(' OR ')})` : `AND category.id='${category}'` : ''};`
+        const sql = `SELECT job.id, job.name, job.description, job.maxBudget, job.bidDeadline, job.createAt, job.duration, job.type, job.experience, category.name as category, user.id as employerId, user.email, user.fullname, user.avatar FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN user ON job.employerId=user.id WHERE job.status=3 ${budget ? `AND job.maxBudget <= ${+budget}` : ''} ${category ? Array.isArray(category) ? `AND (${category.map(item => `category.id='${item}'`).join(' OR ')})` : `AND category.id='${category}'` : ''} ORDER BY createAt DESC;`
 
         conn.promise().query(sql)
             .then(([rows, fields]) => {

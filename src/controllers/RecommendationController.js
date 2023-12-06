@@ -74,8 +74,6 @@ class RecommendationController {
 
                 req.result = req.result.map((item) => ({ freelancerId: item.freelancerId, score: item.score }))
 
-                console.log(req.result);
-
                 res.json(req.result.slice(0.10))
 
             })

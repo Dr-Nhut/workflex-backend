@@ -31,6 +31,16 @@ class SkillController {
             })
             .catch(err => console.error(err));
     }
+
+    deleteSkill(req, res, next) {
+        const id = req.query.id;
+        const sql = `DELETE FROM skill WHERE id = '${id}'`;
+        conn.promise().query(sql)
+            .then(() => {
+                res.send({ message: 'Xoángôn ngữ lập trình thành công' });
+            })
+            .catch(err => console.error(err));
+    }
 }
 
 module.exports = new SkillController;

@@ -37,17 +37,18 @@ class AdminController {
         const allJobs = schedule.scheduledJobs;
 
         // Lặp qua danh sách lịch trình và in ra thông tin lịch trình
+        const result = []
         for (let jobName in allJobs) {
             if (allJobs.hasOwnProperty(jobName)) {
                 const job = allJobs[jobName];
-                console.log(`Tên lịch trình: ${job.name} `);
-                console.log(`Lịch trình: ${job.spec} `);
-                console.log(`Thời gian được lên lịch: ${job.nextInvocation()} `);
-                console.log('-------------------------');
+                result.push({ name: job.name, datetime: job.nextInvocation() })
+                // console.log(`Tên lịch trình: ${job.name} `);
+                // console.log(`Thời gian được lên lịch: ${job.nextInvocation()} `);
+                // console.log('-------------------------');
             }
         }
 
-        res.json({ message: 'check' })
+        res.json(result)
     }
 
     blockAccount(req, res, next) {

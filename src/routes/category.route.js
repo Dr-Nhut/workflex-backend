@@ -7,5 +7,7 @@ router.get("/all/:userId", CategoryController.getAllByUser);
 
 router.post("/", CategoryController.create);
 
+router.delete("/", CategoryController.deleteCategory);
+
 
 module.exports = router;

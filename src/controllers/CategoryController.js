@@ -23,7 +23,7 @@ class CategoryController {
 
     create(req, res, next) {
         const { name } = req.body;
-        console.log(req.body);
+
         const sql = "INSERT INTO category (id, name) VALUES(?, ?)";
         const id = crypto.randomUUID();
         conn.promise().query(sql, [id, name])
@@ -31,6 +31,15 @@ class CategoryController {
                 res.send({ message: 'Thêm lĩnh vực thành công' });
             })
             .catch(err => console.error(err));
+    }
+
+    deleteCategory(req, res) {
+        const id = req.query.id;
+
+        const sql = `DELETE FROM category WHERE category.id = '${id}'`;
+        conn.promise().query(sql)
+            .then(response => res.json('Xóa thành công'))
+            .catch(err => console.error(err))
     }
 }
 

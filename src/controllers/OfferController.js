@@ -44,7 +44,7 @@ class OfferController {
     getProcessingOffer(req, res, next) {
         const jobId = req.query.jobId;
 
-        const sql = `SELECT offer.id, offer.price, offer.description, offer.plan, offer.dateEnd, offer.status, offer.jobId, offer.freelancerId, user.fullname, user.avatar, user.email as freelancerEmail FROM offer LEFT JOIN user ON offer.freelancerId = user.id WHERE offer.jobId = '${jobId}' AND offer.status = 'Đang thực hiện'`
+        const sql = `SELECT offer.id, offer.price, offer.description, offer.plan, offer.dateEnd, offer.status, offer.jobId, offer.freelancerId, user.fullname, user.avatar, user.email as freelancerEmail, user.bank_account FROM offer LEFT JOIN user ON offer.freelancerId = user.id WHERE offer.jobId = '${jobId}' AND offer.status = 'Đang thực hiện'`
         conn.promise().query(sql)
             .then(([rows, fields]) => res.json(rows[0]))
             .catch((err => console.error(err)));

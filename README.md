@@ -2,6 +2,6 @@
 
 **Chức năng chính**: đăng ký tài khoản, đăng nhập, đăng việc, tìm việc, chào giá, thanh toán, trò chuyện,...
 
-**Công nghệ sử dụng**: NodeJS, SocketIO.
+**Công nghệ sử dụng**: NodeJS.
 
 **Cơ sở dữ liệu**: MySQL

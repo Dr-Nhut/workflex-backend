@@ -1,13 +1,19 @@
 const conn = require('../config/db.config')
 const schedule = require('node-schedule');
+const mailer = require('../utils/mailer');
 require('dotenv').config()
 const crypto = require('crypto');
-const { blockBidding } = require('../utils/schedule');
+const {
+    blockBidding
+} = require('../utils/schedule');
 
 class AdminController {
     approvalJob(req, res, next) {
         const id = req.params.id;
-        const { approval, bidDeadline } = req.body;
+        const {
+            approval,
+            bidDeadline
+        } = req.body;
         const sql = `UPDATE job SET status='${approval ? 3 : 2}' ${approval ? '' : `,reasonRefused='${req.body.reasonRefused}'`
             }  WHERE id='${id}';`
 
@@ -25,9 +31,15 @@ class AdminController {
                     // Save schedule in db
                     const sql = "INSERT INTO schedule (id, date, type, jobId) VALUES (?, ?, ?, ?)"
                     conn.promise().query(sql, [crypto.randomUUID(), date, 'blockBidding', id])
-                        .then(() => console.log('Saved schedule'))
+                        .then(() => {
+                            next()
+                        })
+                } else {
+                    res.json({
+                        message: 'Đã từ chối công việc',
+                        type: 'refused'
+                    })
                 }
-                res.json({ message: `${approval ? 'Đã xét duyệt công việc' : 'Đã từ chối công việc'}`, type: `${approval ? 'approval' : 'refused'}` })
             })
             .catch((err) => console.log(err));
     }
@@ -41,7 +53,10 @@ class AdminController {
         for (let jobName in allJobs) {
             if (allJobs.hasOwnProperty(jobName)) {
                 const job = allJobs[jobName];
-                result.push({ name: job.name, datetime: job.nextInvocation() })
+                result.push({
+                    name: job.name,
+                    datetime: job.nextInvocation()
+                })
                 // console.log(`Tên lịch trình: ${job.name} `);
                 // console.log(`Thời gian được lên lịch: ${job.nextInvocation()} `);
                 // console.log('-------------------------');
@@ -57,8 +72,28 @@ class AdminController {
 
         const sql = `UPDATE user SET status=${status} WHERE id='${userId}';`
         conn.promise().query(sql)
-            .then(() => res.json({ message: 'Thông tin user đã được thay đổi' }))
+            .then(() => res.json({
+                message: 'Thông tin user đã được thay đổi'
+            }))
             .catch((err) => console.log(err));
+    }
+
+    sendMailRecommendation(req, res) {
+        Promise.all(req.topFreelancers.map((freelancer) => {
+
+                const sql = `SELECT email, fullname FROM user WHERE user.id ='${freelancer}'`
+
+                return conn.promise().query(sql)
+            }))
+            .then(result => {
+                result.map(([rows, fields]) => {
+                    mailer.sendMail('leminhnhut1612@gmail.com', "Có công việc mới dành cho bạn", `<h1>Xin chào, ${rows[0].fullname}</h1><p>Nhà tuyển dụng vừa thêm công việc mới, <a href="${process.env.APP_FE_URL}/freelancer-bids/${req.params.id}">Chào giá ngay</a ></p >`)
+                });
+            })
+        res.json({
+            message: 'Đã chấp nhận công việc',
+            type: 'approval'
+        })
     }
 }
 

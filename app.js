@@ -3,20 +3,24 @@ const morgan = require('morgan');
 const bodyParser = require('body-parser')
 const cors = require('cors');
 const schedule = require('node-schedule');
-
-const conn = require('./src/config/db.config');
 const route = require('./src/routes');
 const cookieParser = require('cookie-parser');
 const StripeController = require('./src/controllers/StripeController');
 const { blockBidding, blockJob } = require('./src/utils/schedule');
+const { Sequelize, DataTypes } = require("sequelize");
+const { config } = require("dotenv");
 
 const port = 3000;
 
 //connect database
-conn.connect((err) => {
-    if (err) throw err;
-    console.log("Connected Database!!!")
+config();
+if (!process.env.DATABASE_URL) {
+    throw new Error("DATABASE_URL is not set");
+}
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
+    dialectOptions: { ssl: { require: true } }
 });
+
 
 const app = express()
 
@@ -46,18 +50,18 @@ app.listen(port, () => {
 
     const sql = "SELECT * FROM schedule WHERE date > CURRENT_DATE;"
 
-    conn.promise().query(sql)
-        .then(([rows, fields]) => {
-            rows.map((row) => {
-                console.log('schedule: ', row);
-                if (row.type === 'blockBidding') {
-                    console.log('schedule execute blockBidding');
-                    const job = schedule.scheduleJob(row.date, () => blockBidding(row.jobId))
-                }
-                else if (row.type === 'blockJob') {
-                    console.log('schedule execute blockJob');
-                    const job = schedule.scheduleJob(row.date, () => blockJob(row.jobId))
-                }
-            })
-        })
+    // conn.promise().query(sql)
+    //     .then(([rows, fields]) => {
+    //         rows.map((row) => {
+    //             console.log('schedule: ', row);
+    //             if (row.type === 'blockBidding') {
+    //                 console.log('schedule execute blockBidding');
+    //                 const job = schedule.scheduleJob(row.date, () => blockBidding(row.jobId))
+    //             }
+    //             else if (row.type === 'blockJob') {
+    //                 console.log('schedule execute blockJob');
+    //                 const job = schedule.scheduleJob(row.date, () => blockJob(row.jobId))
+    //             }
+    //         })
+    //     })
 })

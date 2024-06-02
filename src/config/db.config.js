@@ -1,12 +1,11 @@
-const mysql = require('mysql2');
-require('dotenv/config')
+const dotenv = require('dotenv');
+dotenv.config();
 
-const conn = mysql.createConnection({
-    host: "localhost",
-    user: process.env.USER_DB,
-    password: process.env.PASSWORD_DB,
-    database: process.env.NAME_DB,
-});
+module.exports = {
+    development: {
+        url: process.env.DATABASE_URL,
+        dialect: 'postgres',
+        dialectOptions: { ssl: { require: true } }
+    }
+};
 
-
-module.exports = conn;

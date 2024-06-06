@@ -21,7 +21,6 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
     dialectOptions: { ssl: { require: true } }
 });
 
-
 const app = express()
 
 app.use(cookieParser());

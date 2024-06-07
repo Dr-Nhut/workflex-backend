@@ -9,3 +9,6 @@ module.exports = (err, req, res, next) => {
         message: err.message
     })
 }
+
+const x = 1;
+const y = 2;

@@ -10,6 +10,5 @@ module.exports = (err, req, res, next) => {
     })
 }
 
-function () {
-    return x;
-}
+const x = 1;
+const y = 2;

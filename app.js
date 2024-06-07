@@ -45,6 +45,13 @@ app.use(express.static('public'))
 
 route(app);
 
+app.all('*', (req, res, next) => {
+    res.status(404).json({
+        status: 'fail',
+        message: `Không tìm thấy ${req.originalUrl}`
+    })
+})
+
 app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`);
 

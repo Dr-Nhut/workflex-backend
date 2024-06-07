@@ -9,6 +9,8 @@ const StripeController = require('./src/controllers/StripeController');
 const { blockBidding, blockJob } = require('./src/utils/schedule');
 const { Sequelize, DataTypes } = require("sequelize");
 const { config } = require("dotenv");
+const globalErorHandler = require("./src/controllers/errorController");
+const AppError = require('./src/utils/errorHandler');
 
 const port = 3000;
 
@@ -46,11 +48,10 @@ app.use(express.static('public'))
 route(app);
 
 app.all('*', (req, res, next) => {
-    res.status(404).json({
-        status: 'fail',
-        message: `Không tìm thấy ${req.originalUrl}`
-    })
+    next(new AppError(`Không tìm thấy ${req.originalUrl}`, 404))
 })
+
+app.use(globalErorHandler);
 
 app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`);

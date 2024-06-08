@@ -53,7 +53,7 @@ app.all('*', (req, res, next) => {
 
 app.use(globalErorHandler);
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`);
 
     const sql = "SELECT * FROM schedule WHERE date > CURRENT_DATE;"
@@ -72,4 +72,13 @@ app.listen(port, () => {
     //             }
     //         })
     //     })
+})
+
+process.on('unhandledRejection', err => {
+    console.log(`${err.name}: ${err.message}`);
+    console.log('Unhandled rejection! Shutting down...');
+
+    server.close(() => {
+        process.exit(1);
+    });
 })

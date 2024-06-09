@@ -10,7 +10,6 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
       User.belongsToMany(models.Category, { through: 'UserCategories' });
     }
   }
@@ -20,14 +19,73 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    name: DataTypes.STRING,
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: 'Bạn chưa nhập tên!!!'
+        }
+      }
+    },
     avatar: DataTypes.STRING,
-    email: DataTypes.STRING,
-    phone: DataTypes.STRING,
-    password: DataTypes.STRING,
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      set(value) {
+        if (value !== null && value !== undefined) {
+          this.setDataValue('email', value.toLowerCase());
+        }
+      },
+      unique: {
+        msg: 'Địa chỉ email đã tồn tại!!!'
+      },
+      validate: {
+        isEmail: {
+          msg: 'Địa chỉ email không hợp lệ!!!'
+        },
+        notNull: {
+          msg: 'Bạn chưa nhập địa chỉ email!!!'
+        }
+      }
+    },
+    phone: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: {
+        msg: 'Số điện thoại đã tồn tại!!!'
+      },
+      validate: {
+        is: {
+          args: /^(0|\+84)(3|5|7|8|9)[0-9]{8}$/,
+          msg: 'Số điện thoại không hợp lệ!!!'
+        }
+      }
+    },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: "Bạn chưa điền mật khẩu!!!"
+        }
+      }
+    },
     address: DataTypes.STRING,
     bio: DataTypes.STRING,
-    role: DataTypes.STRING,
+    role: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: "Bạn chưa chọn loại tài khoản!!!"
+        },
+        isIn: {
+          args: [['adm', 'emp', 'fre']],
+          msg: "Loại tài khoản không hợp lệ"
+        },
+      }
+    },
     sex: DataTypes.BOOLEAN,
     bankAccount: DataTypes.STRING
   }, {

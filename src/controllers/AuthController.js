@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const { ValidationError } = require('sequelize');
 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -7,6 +8,7 @@ const { User, Category } = require('../../models');
 
 const conn = require('../config/db.config')
 const mailer = require('../utils/mailer');
+const AppError = require('../utils/errorHandler');
 
 class AuthController {
     checkUserExisted(req, res, next) {
@@ -47,6 +49,9 @@ class AuthController {
     async registerUser(req, res, next) {
         try {
             const { name, email, password, address, role, sex, bankAccount, phone, categories } = req.body;
+            if (!password) {
+                next(new AppError('Bạn chưa nhập mật khẩu!!!', 400))
+            }
             const hash = await bcrypt.hash(password, 10)
             const avatar = sex ? 'avatar-default/avatar-man.png' : 'avatar-default/avatar-woman.png'
             const newUser = await User.create({
@@ -64,11 +69,11 @@ class AuthController {
             } else next();
         }
         catch (err) {
-            console.error(err.message);
-            res.status(400).json({
-                status: 'error',
-                message: err.message
-            })
+            if (err instanceof ValidationError) {
+                const errorMessages = err.errors.map(err => err.message)
+                err.message = errorMessages.join(', ');
+            }
+            next(new AppError(err.message, 400))
         }
     }
 

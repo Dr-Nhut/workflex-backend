@@ -1,11 +1,12 @@
-const crypto = require('crypto');
-
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv/config');
+const { User, Category } = require('../../models');
 
 const conn = require('../config/db.config')
 const mailer = require('../utils/mailer');
+const AppError = require('../utils/errorHandler');
+const validationErrorHandler = require('../utils/validationErrorHandler');
 
 class AuthController {
     checkUserExisted(req, res, next) {
@@ -43,26 +44,32 @@ class AuthController {
         })
     }
 
-    registerUser(req, res, next) {
-        const { fullname, email, password, address, role, emailVerifiedAt, sex, bank_account, phone } = req.body;
-        bcrypt.hash(password, 10)
-            .then(hash => {
-                req.id = crypto.randomUUID();
-                const avatar = sex === 'Nam' ? 'avatar-default/avatar-man.png' : 'avatar-default/avatar-woman.png'
-                const sql = "INSERT INTO user (id, fullname, email, avatar, password, address, role, sex, bank_account, phone, email_verified_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                return conn.promise().query(sql, [req.id, fullname.trim(), email, avatar, hash, address, role, sex, bank_account, phone, new Date(emailVerifiedAt)])
-            })
-            .then(() => {
-                const { categories } = req.body;
-                const sql = `INSERT INTO usercategory (userId, categoryId) VALUES ${categories.map(category => `('${req.id}', '${category}')`).join(',')}`;
-                return conn.promise().query(sql)
-            })
-            .then(() => {
-                if (req.body.role !== 'fre')
-                    res.json({ message: 'Đăng ký tài khoản thành công' })
-                else next();
-            })
-            .catch((e) => console.error(e));
+    async registerUser(req, res, next) {
+        const { name, email, password, passwordConfirm, address, role, sex, bankAccount, phone, categories } = req.body;
+
+        if (password !== passwordConfirm) {
+            next(new AppError('Mật khẩu không khớp!!!', 400))
+        }
+        try {
+            const avatar = sex ? 'avatar-default/avatar-man.png' : 'avatar-default/avatar-woman.png'
+            const newUser = await User.create({
+                name, email, password, address, role, avatar, sex, bankAccount, phone,
+            });
+
+            await newUser.addCategories(categories);
+
+            if (role !== 'fre') {
+                res.status(200).json({
+                    status: 'success',
+                    message: 'Đăng ký tài khoản thành công!!!',
+                    data: newUser,
+                })
+            } else next();
+        }
+        catch (err) {
+            validationErrorHandler(err);
+            next(new AppError(err.message, 400))
+        }
     }
 
     registerFreelancer(req, res, next) {

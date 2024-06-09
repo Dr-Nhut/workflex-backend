@@ -1,5 +1,4 @@
 const crypto = require('crypto');
-const { ValidationError } = require('sequelize');
 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -9,6 +8,7 @@ const { User, Category } = require('../../models');
 const conn = require('../config/db.config')
 const mailer = require('../utils/mailer');
 const AppError = require('../utils/errorHandler');
+const validationErrorHandler = require('../utils/validationErrorHandler');
 
 class AuthController {
     checkUserExisted(req, res, next) {
@@ -69,10 +69,7 @@ class AuthController {
             } else next();
         }
         catch (err) {
-            if (err instanceof ValidationError) {
-                const errorMessages = err.errors.map(err => err.message)
-                err.message = errorMessages.join(', ');
-            }
+            validationErrorHandler(err);
             next(new AppError(err.message, 400))
         }
     }

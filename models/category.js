@@ -21,7 +21,15 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    name: DataTypes.STRING
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: 'Tên lĩnh vực không hợp lệ!!!'
+        }
+      }
+    }
   }, {
     sequelize,
     modelName: 'Category',

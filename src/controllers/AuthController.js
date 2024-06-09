@@ -1,5 +1,3 @@
-const crypto = require('crypto');
-
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv/config');
@@ -47,15 +45,15 @@ class AuthController {
     }
 
     async registerUser(req, res, next) {
+        const { name, email, password, passwordConfirm, address, role, sex, bankAccount, phone, categories } = req.body;
+
+        if (password !== passwordConfirm) {
+            next(new AppError('Mật khẩu không khớp!!!', 400))
+        }
         try {
-            const { name, email, password, address, role, sex, bankAccount, phone, categories } = req.body;
-            if (!password) {
-                next(new AppError('Bạn chưa nhập mật khẩu!!!', 400))
-            }
-            const hash = await bcrypt.hash(password, 10)
             const avatar = sex ? 'avatar-default/avatar-man.png' : 'avatar-default/avatar-woman.png'
             const newUser = await User.create({
-                name, email, password: hash, address, role, avatar, sex, bankAccount, phone,
+                name, email, password, address, role, avatar, sex, bankAccount, phone,
             });
 
             await newUser.addCategories(categories);

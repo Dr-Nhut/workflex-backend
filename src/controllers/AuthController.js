@@ -6,7 +6,7 @@ const { User, Category } = require('../../models');
 const conn = require('../config/db.config')
 const mailer = require('../utils/mailer');
 const AppError = require('../utils/errorHandler');
-const validationErrorHandler = require('../utils/validationErrorHandler');
+const validationErrorHandler = require('../utils/sequelizeErrorHandler');
 
 class AuthController {
     checkUserExisted(req, res, next) {

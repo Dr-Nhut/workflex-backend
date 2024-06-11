@@ -24,9 +24,15 @@ module.exports = (sequelize, DataTypes) => {
     name: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: {
+        msg: 'Tên lĩnh vực đã tồn tại!!!'
+      },
       validate: {
         notNull: {
           msg: 'Tên lĩnh vực không hợp lệ!!!'
+        },
+        notEmpty: {
+          msg: 'Tên lĩnh vực không được bỏ trống!!!'
         }
       }
     }
@@ -34,5 +40,6 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'Category',
   });
+
   return Category;
 };

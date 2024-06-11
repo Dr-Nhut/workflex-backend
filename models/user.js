@@ -13,6 +13,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       User.belongsToMany(models.Category, { through: 'UserCategories' });
+      User.belongsToMany(models.Skill, { through: 'UserSkills' });
     }
   }
   User.init({

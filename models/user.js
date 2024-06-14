@@ -90,7 +90,9 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     sex: DataTypes.BOOLEAN,
-    bankAccount: DataTypes.STRING
+    bankAccount: DataTypes.STRING,
+    dayOfBirth: DataTypes.DATE,
+    experience: DataTypes.STRING,
   }, {
     sequelize,
     modelName: 'User',

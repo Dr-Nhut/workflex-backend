@@ -8,6 +8,6 @@ module.exports = (err, next) => {
         next(new AppError(err.message, 400))
     }
     else {
-        next(new AppError('Unexpected error', 500))
+        next(new AppError('Unexpected Error', 500))
     }
 }

@@ -55,7 +55,6 @@ class AuthController {
 
         const transaction = await sequelize.transaction();
         try {
-
             const avatar = sex ? 'avatar-default/avatar-man.png' : 'avatar-default/avatar-woman.png'
             const newUser = await User.create({
                 name, email, password, address, role, avatar, sex, bankAccount, phone, dataOfBirth, experience
@@ -67,26 +66,23 @@ class AuthController {
                 transaction
             });
 
-            if (role !== 'fre') {
-                await newUser.reload({ include: [Category], transaction });
-                transaction.commit();
-                res.status(200).json({
-                    status: 'success',
-                    message: 'Đăng ký tài khoản thành công!!!',
-                    data: newUser,
-                })
-            } else {
+            if (role === 'fre') {
                 await newUser.addSkills(skills, {
                     transaction
                 });
-                await newUser.reload({ include: [Category, Skill], transaction });
-                transaction.commit();
-                res.status(200).json({
-                    status: 'success',
-                    message: 'Đăng ký tài khoản thành công!!!',
-                    data: newUser,
-                })
             };
+
+            await newUser.reload({ include: [Category, Skill], transaction });
+            transaction.commit();
+
+            const token = await jwt.sign({ id: newUser.id }, process.env.JWT_SECRET_KEY, { expiresIn: process.env.JWT_SECRET_EXPIRATION });
+
+            res.status(200).json({
+                status: 'success',
+                message: 'Đăng ký tài khoản thành công!!!',
+                token,
+                data: newUser,
+            })
         }
         catch (err) {
             await transaction.rollback();

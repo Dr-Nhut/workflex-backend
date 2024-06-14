@@ -1,12 +1,14 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv/config');
-const { User, Category } = require('../../models');
+const { User, Category, Skill, sequelize } = require('../../models');
+const { config } = require("dotenv");
 
 const conn = require('../config/db.config')
 const mailer = require('../utils/mailer');
 const AppError = require('../utils/errorHandler');
-const validationErrorHandler = require('../utils/sequelizeErrorHandler');
+const sequelizeErrorHandler = require('../utils/sequelizeErrorHandler');
+
 
 class AuthController {
     checkUserExisted(req, res, next) {
@@ -45,36 +47,55 @@ class AuthController {
     }
 
     async registerUser(req, res, next) {
-        const { name, email, password, passwordConfirm, address, role, sex, bankAccount, phone, categories } = req.body;
+        const { name, email, password, passwordConfirm, address, role, sex, bankAccount, phone, categories, dataOfBirth, experience, skills } = req.body;
 
         if (password !== passwordConfirm) {
             next(new AppError('Mật khẩu không khớp!!!', 400))
         }
+
+        const transaction = await sequelize.transaction();
         try {
+
             const avatar = sex ? 'avatar-default/avatar-man.png' : 'avatar-default/avatar-woman.png'
             const newUser = await User.create({
-                name, email, password, address, role, avatar, sex, bankAccount, phone,
+                name, email, password, address, role, avatar, sex, bankAccount, phone, dataOfBirth, experience
+            }, {
+                transaction
             });
 
-            await newUser.addCategories(categories);
+            await newUser.addCategories(categories, {
+                transaction
+            });
 
             if (role !== 'fre') {
+                await newUser.reload({ include: [Category], transaction });
+                transaction.commit();
                 res.status(200).json({
                     status: 'success',
                     message: 'Đăng ký tài khoản thành công!!!',
                     data: newUser,
                 })
-            } else next();
+            } else {
+                await newUser.addSkills(skills, {
+                    transaction
+                });
+                await newUser.reload({ include: [Category, Skill], transaction });
+                transaction.commit();
+                res.status(200).json({
+                    status: 'success',
+                    message: 'Đăng ký tài khoản thành công!!!',
+                    data: newUser,
+                })
+            };
         }
         catch (err) {
-            validationErrorHandler(err);
-            next(new AppError(err.message, 400))
+            await transaction.rollback();
+            sequelizeErrorHandler(err, next);
         }
     }
 
     registerFreelancer(req, res, next) {
         const { dataOfBirth, experience, skills } = req.body;
-        console.log(req.body)
         const sql = `INSERT INTO freelancer (userId, dateofbirth, experience) VALUES(?, ?, ?);`;
         conn.promise().query(sql, [req.id, new Date(dataOfBirth), experience.label])
             .then(() => {

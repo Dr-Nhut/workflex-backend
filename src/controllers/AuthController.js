@@ -90,72 +90,54 @@ class AuthController {
         }
     }
 
-    registerFreelancer(req, res, next) {
-        const { dataOfBirth, experience, skills } = req.body;
-        const sql = `INSERT INTO freelancer (userId, dateofbirth, experience) VALUES(?, ?, ?);`;
-        conn.promise().query(sql, [req.id, new Date(dataOfBirth), experience.label])
-            .then(() => {
-                const { skills } = req.body;
-                const sql = `INSERT INTO freelancerSkill (freelancerId, skillId) VALUES ${skills.map(skill => `('${req.id}', '${skill}')`).join(',')}`;
-                return conn.promise().query(sql)
-            })
-            .then(() => {
-                res.json({ message: 'Đăng ký tài khoản thành công' })
+    // registerFreelancer(req, res, next) {
+    //     const { dataOfBirth, experience, skills } = req.body;
+    //     const sql = `INSERT INTO freelancer (userId, dateofbirth, experience) VALUES(?, ?, ?);`;
+    //     conn.promise().query(sql, [req.id, new Date(dataOfBirth), experience.label])
+    //         .then(() => {
+    //             const { skills } = req.body;
+    //             const sql = `INSERT INTO freelancerSkill (freelancerId, skillId) VALUES ${skills.map(skill => `('${req.id}', '${skill}')`).join(',')}`;
+    //             return conn.promise().query(sql)
+    //         })
+    //         .then(() => {
+    //             res.json({ message: 'Đăng ký tài khoản thành công' })
 
-            })
-            .catch((e) => console.error(e));
-    }
+    //         })
+    //         .catch((e) => console.error(e));
+    // }
 
-    login(req, res, next) {
-        const { email, password } = req.body;
-        const sql = `SELECT * FROM user WHERE email=('${email.trim()}');`;
-        conn.promise().query(sql)
-            .then(async ([rows, fields]) => {
-                if (rows[0]) {
-                    const match = await bcrypt.compare(password, rows[0].password);
-                    if (!match) {
-                        return res.json({
-                            status: "error",
-                            message: "Tài khoản hoặc mật khẩu không đúng",
-                        });
-                    }
-                    const token = jwt.sign(
-                        {
-                            userId: rows[0].id
-                        },
-                        process.env.JWT_KEY,
-                        { expiresIn: "365d" }
-                    );
-                    if (rows[0].status === 1) {
-                        res.json({
-                            status: 'error',
-                            message: 'Tài khoản của bạn đang bị khóa'
-                        })
-                    }
-                    else {
-                        const user = {
-                            id: rows[0].id,
-                            fullname: rows[0].fullname,
-                            email: rows[0].email,
-                            avatar: rows[0].avatar,
-                            role: rows[0].role,
-                            address: rows[0].address,
-                        }
-                        res.json({
-                            status: 'success',
-                            user,
-                            token,
-                        });
-                    }
-                }
-                else {
-                    return res.json({
-                        status: "error",
-                        message: "Tài khoản hoặc mật khẩu không đúng",
-                    });
-                }
-            })
-            .catch((e) => console.error(e));
+    async login(req, res, next) {
+        try {
+            const { email, password } = req.body;
+
+            if (!email || !password) {
+                return next(new AppError('Email và mật khẩu không được bỏ trống!!!', 400))
+            }
+
+            const user = await User.scope('withPassword').findOne({
+                where: {
+                    email
+                },
+            });
+
+            if (!user || !(await User.comparePassword(password, user.password))) {
+                return next(new AppError('Tài khoản hoặc mật khẩu không đúng!!!', 401));
+            }
+            else {
+                const token = jwt.sign({ id: user.id },
+                    process.env.JWT_SECRET_KEY,
+                    { expiresIn: process.env.JWT_SECRET_EXPIRATION }
+                );
+
+                res.status(200).json({
+                    status: 'success',
+                    token,
+                });
+            }
+        }
+        catch {
+            next(new AppError('Unexpected', 500));
+        }
     }
 
     getUser(req, res) {

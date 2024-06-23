@@ -15,6 +15,11 @@ module.exports = (sequelize, DataTypes) => {
       User.belongsToMany(models.Category, { through: 'UserCategories' });
       User.belongsToMany(models.Skill, { through: 'UserSkills' });
     }
+
+    static async comparePassword(password, hashedPassword) {
+      return bcrypt.compare(password, hashedPassword);
+    }
+
   }
   User.init({
     id: {
@@ -96,6 +101,14 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'User',
+    defaultScope: {
+      attributes: { exclude: ['password'] },
+    },
+    scopes: {
+      withPassword: {
+        attributes: {},
+      },
+    },
   });
 
   User.beforeCreate(async (user, options) => {

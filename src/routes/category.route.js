@@ -1,12 +1,13 @@
 const express = require('express');
 const CategoryController = require('../controllers/CategoryController');
+const AuthController = require('../controllers/AuthController');
 const validateUUID = require('../middlewares/validateUUIDv4');
 const categoryRouter = express.Router();
 
 
 categoryRouter
     .route("/")
-    .get(CategoryController.getAll)
+    .get(AuthController.protect, CategoryController.getAll)
     .post(CategoryController.create);
 
 categoryRouter

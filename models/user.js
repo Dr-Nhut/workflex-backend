@@ -20,6 +20,13 @@ module.exports = (sequelize, DataTypes) => {
       return bcrypt.compare(password, hashedPassword);
     }
 
+    changedPasswordAfter(jwtIat) {
+      if (this.passwordChangedAt) {
+        const passwordTime = parseInt(this.passwordChangedAt.getTime() / 1000, 10);
+        return passwordTime > jwtIat
+      }
+      return false;
+    }
   }
   User.init({
     id: {
@@ -78,6 +85,9 @@ module.exports = (sequelize, DataTypes) => {
           msg: "Bạn chưa điền mật khẩu!!!"
         }
       }
+    },
+    passwordChangedAt: {
+      type: DataTypes.DATE,
     },
     address: DataTypes.STRING,
     bio: DataTypes.STRING,

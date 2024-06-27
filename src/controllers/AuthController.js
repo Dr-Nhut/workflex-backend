@@ -1,12 +1,11 @@
+const crypto = require('crypto');
+
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv/config');
-const { User, Category, Skill, sequelize } = require('../../models');
+
 const conn = require('../config/db.config')
 const mailer = require('../utils/mailer');
-const AppError = require('../utils/errorHandler');
-const sequelizeErrorHandler = require('../utils/sequelizeErrorHandler');
-
 
 class AuthController {
     checkUserExisted(req, res, next) {
@@ -44,82 +43,95 @@ class AuthController {
         })
     }
 
-    async registerUser(req, res, next) {
-        const { name, email, password, passwordConfirm, address, role, sex, bankAccount, phone, categories, dataOfBirth, experience, skills } = req.body;
-
-        if (password !== passwordConfirm) {
-            next(new AppError('Mật khẩu không khớp!!!', 400))
-        }
-
-        const transaction = await sequelize.transaction();
-        try {
-            const avatar = sex ? 'avatar-default/avatar-man.png' : 'avatar-default/avatar-woman.png'
-            const newUser = await User.create({
-                name, email, password, address, role, avatar, sex, bankAccount, phone, dataOfBirth, experience
-            }, {
-                transaction
-            });
-
-            await newUser.addCategories(categories, {
-                transaction
-            });
-
-            if (role === 'fre') {
-                await newUser.addSkills(skills, {
-                    transaction
-                });
-            };
-
-            await newUser.reload({ include: [Category, Skill], transaction });
-            transaction.commit();
-
-            const token = await jwt.sign({ id: newUser.id }, process.env.JWT_SECRET_KEY, { expiresIn: process.env.JWT_SECRET_EXPIRATION });
-
-            res.status(200).json({
-                status: 'success',
-                message: 'Đăng ký tài khoản thành công!!!',
-                token,
-                data: newUser,
+    registerUser(req, res, next) {
+        const { fullname, email, password, address, role, emailVerifiedAt, sex, bank_account, phone } = req.body;
+        bcrypt.hash(password, 10)
+            .then(hash => {
+                req.id = crypto.randomUUID();
+                const avatar = sex === 'Nam' ? 'avatar-default/avatar-man.png' : 'avatar-default/avatar-woman.png'
+                const sql = "INSERT INTO user (id, fullname, email, avatar, password, address, role, sex, bank_account, phone, email_verified_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                return conn.promise().query(sql, [req.id, fullname.trim(), email, avatar, hash, address, role, sex, bank_account, phone, new Date(emailVerifiedAt)])
             })
-        }
-        catch (err) {
-            await transaction.rollback();
-            sequelizeErrorHandler(err, next);
-        }
+            .then(() => {
+                const { categories } = req.body;
+                const sql = `INSERT INTO usercategory (userId, categoryId) VALUES ${categories.map(category => `('${req.id}', '${category}')`).join(',')}`;
+                return conn.promise().query(sql)
+            })
+            .then(() => {
+                if (req.body.role !== 'fre')
+                    res.json({ message: 'Đăng ký tài khoản thành công' })
+                else next();
+            })
+            .catch((e) => console.error(e));
     }
 
-    async login(req, res, next) {
-        try {
-            const { email, password } = req.body;
+    registerFreelancer(req, res, next) {
+        const { dataOfBirth, experience, skills } = req.body;
+        console.log(req.body)
+        const sql = `INSERT INTO freelancer (userId, dateofbirth, experience) VALUES(?, ?, ?);`;
+        conn.promise().query(sql, [req.id, new Date(dataOfBirth), experience.label])
+            .then(() => {
+                const { skills } = req.body;
+                const sql = `INSERT INTO freelancerSkill (freelancerId, skillId) VALUES ${skills.map(skill => `('${req.id}', '${skill}')`).join(',')}`;
+                return conn.promise().query(sql)
+            })
+            .then(() => {
+                res.json({ message: 'Đăng ký tài khoản thành công' })
 
-            if (!email || !password) {
-                return next(new AppError('Email và mật khẩu không được bỏ trống!!!', 400))
-            }
+            })
+            .catch((e) => console.error(e));
+    }
 
-            const user = await User.scope('withPassword').findOne({
-                where: {
-                    email
-                },
-            });
-
-            if (!user || !(await User.comparePassword(password, user.password))) {
-                return next(new AppError('Tài khoản hoặc mật khẩu không đúng!!!', 401));
-            }
-            else {
-                const token = jwt.sign({ id: user.id },
-                    process.env.JWT_SECRET_KEY,
-                    { expiresIn: process.env.JWT_SECRET_EXPIRATION }
-                );
-
-                res.status(200).json({
-                    status: 'success',
-                    token,
-                });
-            }
-        }
-        catch {
-            next(new AppError('Unexpected', 500));
-        }
+    login(req, res, next) {
+        const { email, password } = req.body;
+        const sql = `SELECT * FROM user WHERE email=('${email.trim()}');`;
+        conn.promise().query(sql)
+            .then(async ([rows, fields]) => {
+                if (rows[0]) {
+                    const match = await bcrypt.compare(password, rows[0].password);
+                    if (!match) {
+                        return res.json({
+                            status: "error",
+                            message: "Tài khoản hoặc mật khẩu không đúng",
+                        });
+                    }
+                    const token = jwt.sign(
+                        {
+                            userId: rows[0].id
+                        },
+                        process.env.JWT_KEY,
+                        { expiresIn: "365d" }
+                    );
+                    if (rows[0].status === 1) {
+                        res.json({
+                            status: 'error',
+                            message: 'Tài khoản của bạn đang bị khóa'
+                        })
+                    }
+                    else {
+                        const user = {
+                            id: rows[0].id,
+                            fullname: rows[0].fullname,
+                            email: rows[0].email,
+                            avatar: rows[0].avatar,
+                            role: rows[0].role,
+                            address: rows[0].address,
+                        }
+                        res.json({
+                            status: 'success',
+                            user,
+                            token,
+                        });
+                    }
+                }
+                else {
+                    return res.json({
+                        status: "error",
+                        message: "Tài khoản hoặc mật khẩu không đúng",
+                    });
+                }
+            })
+            .catch((e) => console.error(e));
     }
 
     getUser(req, res) {
@@ -138,7 +150,7 @@ class AuthController {
 
     getUserId(req, res, next) {
         const token = req.cookies.token;
-        jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decoded) => {
+        jwt.verify(token, process.env.JWT_KEY, (err, decoded) => {
             if (err) res.status(404).send('Invalid token');
             if (decoded) {
                 const sql = `SELECT id FROM user WHERE id='${decoded.userId}';`;
@@ -151,36 +163,6 @@ class AuthController {
                     .catch(err => console.log(err))
             }
         });
-    }
-
-    async protect(req, res, next) {
-        let token;
-        if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
-            token = req.headers.authorization.split(" ")[1];
-        }
-
-        if (!token) {
-            return next(new AppError('Bạn chưa đăng nhập tài khoản!!!', 401));
-        }
-
-        try {
-            const decode = await jwt.verify(token, process.env.JWT_SECRET_KEY);
-            const currentUser = await User.findByPk(decode.id);
-
-            if (!currentUser) {
-                return next(new AppError('Tài khoản không tồn tại!!!', 401));
-            }
-
-            if (currentUser.changedPasswordAfter(decode.iat)) {
-                return next(new AppError('Mật khẩu của bạn đã được thay đổi! Vui lòng đăng nhập lại!!!', 401));
-            }
-
-            req.user = currentUser;
-            next()
-        }
-        catch (err) {
-            next(err);
-        }
     }
 }
 

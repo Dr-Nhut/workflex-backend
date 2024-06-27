@@ -2,8 +2,6 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv/config');
 const { User, Category, Skill, sequelize } = require('../../models');
-const { config } = require("dotenv");
-
 const conn = require('../config/db.config')
 const mailer = require('../utils/mailer');
 const AppError = require('../utils/errorHandler');
@@ -90,22 +88,6 @@ class AuthController {
         }
     }
 
-    // registerFreelancer(req, res, next) {
-    //     const { dataOfBirth, experience, skills } = req.body;
-    //     const sql = `INSERT INTO freelancer (userId, dateofbirth, experience) VALUES(?, ?, ?);`;
-    //     conn.promise().query(sql, [req.id, new Date(dataOfBirth), experience.label])
-    //         .then(() => {
-    //             const { skills } = req.body;
-    //             const sql = `INSERT INTO freelancerSkill (freelancerId, skillId) VALUES ${skills.map(skill => `('${req.id}', '${skill}')`).join(',')}`;
-    //             return conn.promise().query(sql)
-    //         })
-    //         .then(() => {
-    //             res.json({ message: 'Đăng ký tài khoản thành công' })
-
-    //         })
-    //         .catch((e) => console.error(e));
-    // }
-
     async login(req, res, next) {
         try {
             const { email, password } = req.body;
@@ -156,7 +138,7 @@ class AuthController {
 
     getUserId(req, res, next) {
         const token = req.cookies.token;
-        jwt.verify(token, process.env.JWT_KEY, (err, decoded) => {
+        jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decoded) => {
             if (err) res.status(404).send('Invalid token');
             if (decoded) {
                 const sql = `SELECT id FROM user WHERE id='${decoded.userId}';`;
@@ -169,6 +151,36 @@ class AuthController {
                     .catch(err => console.log(err))
             }
         });
+    }
+
+    async protect(req, res, next) {
+        let token;
+        if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+            token = req.headers.authorization.split(" ")[1];
+        }
+
+        if (!token) {
+            return next(new AppError('Bạn chưa đăng nhập tài khoản!!!', 401));
+        }
+
+        try {
+            const decode = await jwt.verify(token, process.env.JWT_SECRET_KEY);
+            const currentUser = await User.findByPk(decode.id);
+
+            if (!currentUser) {
+                return next(new AppError('Tài khoản không tồn tại!!!', 401));
+            }
+
+            if (currentUser.changedPasswordAfter(decode.iat)) {
+                return next(new AppError('Mật khẩu của bạn đã được thay đổi! Vui lòng đăng nhập lại!!!', 401));
+            }
+
+            req.user = currentUser;
+            next()
+        }
+        catch (err) {
+            next(err);
+        }
     }
 }
 

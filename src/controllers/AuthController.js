@@ -182,6 +182,16 @@ class AuthController {
             next(err);
         }
     }
+
+    restrictTo(...roles) {
+        return (req, res, next) => {
+            if (!roles.includes(req.user.role)) {
+                return next(new AppError('Bạn không được cấp quyền thực hiện chức năng này!!!', 403))
+            }
+
+            next();
+        }
+    }
 }
 
 module.exports = new AuthController;

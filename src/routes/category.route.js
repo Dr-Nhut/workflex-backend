@@ -7,7 +7,7 @@ const categoryRouter = express.Router();
 
 categoryRouter
     .route("/")
-    .get(AuthController.protect, CategoryController.getAll)
+    .get(AuthController.protect, AuthController.restrictTo('adm'), CategoryController.getAll)
     .post(CategoryController.create);
 
 categoryRouter

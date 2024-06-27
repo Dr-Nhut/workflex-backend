@@ -1,12 +1,17 @@
 const express = require('express');
 const SkillController = require('../controllers/SkillController');
-const router = express.Router();
+const skillRouter = express.Router();
 
-router.get("/all", SkillController.getAll);
-router.get("/all/:userId", SkillController.getAllByUser);
+skillRouter
+    .route("/")
+    .get(SkillController.getAll)
+    .post(SkillController.create)
 
-router.post("/", SkillController.create);
-router.delete("/", SkillController.deleteSkill);
+// router.get("/all/:userId", SkillController.getAllByUser);
+
+skillRouter.route("/:id")
+    .patch(SkillController.update)
+    .delete(SkillController.delete);
 
 
-module.exports = router;
+module.exports = skillRouter;

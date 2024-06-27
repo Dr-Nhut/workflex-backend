@@ -1,14 +1,19 @@
 const express = require('express');
 const CategoryController = require('../controllers/CategoryController');
-const router = express.Router();
-
-router.get("/all", CategoryController.getAll);
-router.get("/all/:userId", CategoryController.getAllByUser);
-
-router.post("/", CategoryController.create);
-router.put("/:id", CategoryController.updateCategories);
-
-router.delete("/", CategoryController.deleteCategory);
+const AuthController = require('../controllers/AuthController');
+const validateUUID = require('../middlewares/validateUUIDv4');
+const categoryRouter = express.Router();
 
 
-module.exports = router;
+categoryRouter
+    .route("/")
+    .get(AuthController.protect, CategoryController.getAll)
+    .post(CategoryController.create);
+
+categoryRouter
+    .route("/:id")
+    .put(validateUUID, CategoryController.update)
+    .delete(validateUUID, CategoryController.delete);
+// categoryRouter.get("/all/:userId", CategoryController.getAllByUser);
+
+module.exports = categoryRouter;

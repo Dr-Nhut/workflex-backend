@@ -3,6 +3,7 @@ const {
   Model
 } = require('sequelize');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
@@ -26,6 +27,15 @@ module.exports = (sequelize, DataTypes) => {
         return passwordTime > jwtIat
       }
       return false;
+    }
+
+    createPasswordResetToken() {
+      const resetToken = crypto.randomBytes(32).toString('hex');
+
+      this.passwordResetToken = crypto.createHash("sha256").update(resetToken).digest('hex');
+      this.passwordResetExpires = Date.now() + 5 * 60 * 1000;
+
+      return resetToken;
     }
   }
   User.init({
@@ -83,9 +93,14 @@ module.exports = (sequelize, DataTypes) => {
       validate: {
         notNull: {
           msg: "Bạn chưa điền mật khẩu!!!"
+        },
+        notEmpty: {
+          msg: "Bạn chưa điền mật khẩu!!!"
         }
       }
     },
+    passwordResetToken: DataTypes.STRING,
+    passwordResetExpires: DataTypes.DATE,
     passwordChangedAt: {
       type: DataTypes.DATE,
     },
@@ -125,6 +140,12 @@ module.exports = (sequelize, DataTypes) => {
     const hashedPassword = await bcrypt.hash(user.password, 10);
     user.password = hashedPassword;
   });
+
+  User.beforeSave(async (user, options) => {
+    if (user._changed.has('passwordResetToken') && !user.isNewRecord) {
+      user.passwordChangedAt = Date.now() - 1000;
+    }
+  })
 
   return User;
 };

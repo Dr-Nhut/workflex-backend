@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 require('dotenv/config');
 const { User, Category, Skill, sequelize } = require('../../models');
@@ -6,6 +7,7 @@ const conn = require('../config/db.config')
 const mailer = require('../utils/mailer');
 const AppError = require('../utils/errorHandler');
 const sequelizeErrorHandler = require('../utils/sequelizeErrorHandler');
+const { Op } = require('sequelize');
 
 
 class AuthController {
@@ -180,6 +182,89 @@ class AuthController {
         }
         catch (err) {
             next(err);
+        }
+    }
+
+    async forgetPassword(req, res, next) {
+        const email = req.body.email;
+
+        if (!email) {
+            return next(new AppError('Vui lòng nhập email tài khoản của bạn!!!', 400));
+        }
+
+        const user = await User.findOne({
+            where: {
+                email: req.body.email
+            }
+        })
+
+        if (!user) {
+            return next(new AppError('Tài khoản không tồn tại!!!', 404));
+        }
+
+
+        const resetToken = user.createPasswordResetToken();
+        await user.save();
+
+        const resetUrl = `${req.protocol}://${req.hostname}/api/auth/resetPassword/${resetToken}`;
+
+        try {
+            await mailer.sendMail(user.email, 'Đặt lại mật khẩu Work Flex', `<p>${resetUrl}</p>`)
+
+            return res.status(200).json({
+                result: 'success',
+                message: 'Token sent to email',
+            })
+        } catch (err) {
+            user.passwordResetToken = undefined;
+            user.passwordResetExpires = undefined;
+            user.save();
+
+            return next(new AppError('Đã có lỗi xảy ra khi gửi email xác thực. Vui lòng thử lại sau!!!'), 500)
+        }
+    }
+
+    async resetPassword(req, res, next) {
+        const token = req.params.token;
+
+        try {
+            const hashedToken = crypto.createHash("sha256").update(token).digest('hex');
+
+            const user = await User.findOne({
+                where: {
+                    passwordResetToken: hashedToken,
+                    passwordResetExpires: {
+                        [Op.gt]: Date.now()
+                    }
+                }
+            });
+
+            if (!user) {
+                return next(new AppError('Token is expired!', 400));
+            }
+
+            if (req.body.password !== req.body.passwordConfirm) {
+                next(new AppError('Mật khẩu không khớp!!!', 400))
+            }
+
+            user.password = req.body.password;
+            user.passwordResetToken = null;
+            user.passwordResetExpires = null;
+            await user.validate();
+            await user.save();
+
+            const tokenJWT = jwt.sign({ id: user.id },
+                process.env.JWT_SECRET_KEY,
+                { expiresIn: process.env.JWT_SECRET_EXPIRATION }
+            );
+
+            res.status(200).json({
+                status: 'success',
+                token: tokenJWT,
+                user,
+            });
+        } catch (err) {
+            next(new AppError(err.message, 400));
         }
     }
 }

@@ -1,5 +1,17 @@
 const crypto = require('crypto');
 const conn = require('../config/db.config');
+const AppError = require('../utils/errorHandler');
+const { User } = require('../../models');
+
+const filterObj = (obj, ...allowFields) => {
+    const newObj = {};
+    Object.keys(obj).forEach(key => {
+        if (allowFields.includes(key)) {
+            newObj[key] = obj[key];
+        }
+    })
+    return newObj
+}
 
 
 class UserController {
@@ -63,6 +75,36 @@ class UserController {
         conn.promise().query(sql, [fullname, email, address, bio, bank_account, sex])
             .then(() => res.json({ message: 'Thông tin user đã được thay đổi' }))
             .catch((err) => console.log(err));
+    }
+
+    async updateMe(req, res, next) {
+        const userId = req.user.id;
+        const { password, passwordConfirm } = req.body;
+
+        if (password || passwordConfirm) {
+            return next(new AppError('Chức năng này không cho phép thay đổi password!!!', 400))
+        }
+
+        const updateObj = filterObj(req.body, "name", "phone", "address", "bio", "bankAccount", "sex", "dayOfBirth", "experience")
+
+        try {
+            await User.update(
+                updateObj,
+                {
+                    where: {
+                        id: userId,
+                    },
+                },
+            );
+
+            res.status(200).json({
+                status: "success",
+                message: "Cập nhật thông tin thành công!"
+            })
+        } catch (err) {
+            return next(new AppError(err.message, 500))
+        }
+
     }
 
 

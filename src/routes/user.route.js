@@ -12,5 +12,6 @@ router.get("/:id", UserController.getInfor);
 router.patch("/update-avatar", AuthController.getUserId, uploadAvatar.single('avatar'), UserController.updateAvatar);
 
 router.patch("/update-infor", AuthController.getUserId, UserController.updateInfor);
+router.patch("/updateMe", AuthController.protect, UserController.updateMe);
 
 module.exports = router;

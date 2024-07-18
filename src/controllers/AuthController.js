@@ -119,8 +119,8 @@ class AuthController {
                 });
             }
         }
-        catch {
-            next(new AppError('Unexpected', 500));
+        catch (err) {
+            next(new AppError(err.message, 500));
         }
     }
 
@@ -247,9 +247,11 @@ class AuthController {
                 next(new AppError('Mật khẩu không khớp!!!', 400))
             }
 
-            user.password = req.body.password;
+
             user.passwordResetToken = null;
             user.passwordResetExpires = null;
+            const hashedPassword = await bcrypt.hash(req.body.password, 10);
+            user.password = hashedPassword;
             await user.validate();
             await user.save();
 
@@ -261,9 +263,49 @@ class AuthController {
             res.status(200).json({
                 status: 'success',
                 token: tokenJWT,
-                user,
             });
         } catch (err) {
+            next(new AppError(err.message, 400));
+        }
+    }
+
+    async updatePassword(req, res, next) {
+        const { currentPassword, passwordNew, passwordConfirm } = req.body;
+
+        if (!currentPassword || !passwordNew || !passwordConfirm) {
+            return next(new AppError("Vui lòng nhập đầy đủ thông tin!", 400));
+        }
+
+        try {
+            const user = await User.scope('withPassword').findByPk(req.user.id);
+
+            //compare password with current password
+            const match = await bcrypt.compare(currentPassword, user.password);
+
+            if (!match) {
+                return next(new AppError("Mật khẩu hiện tại không đúng!", 401))
+            }
+
+            if (passwordNew !== passwordConfirm) {
+                return next(new AppError('Mật khẩu không khớp!!!', 400))
+            }
+
+            await user.validate();
+            const hashedPassword = await bcrypt.hash(passwordNew, 10);
+            user.password = hashedPassword;
+            await user.save();
+
+            const tokenJWT = jwt.sign({ id: user.id },
+                process.env.JWT_SECRET_KEY,
+                { expiresIn: process.env.JWT_SECRET_EXPIRATION }
+            );
+
+            res.status(200).json({
+                status: 'success',
+                token: tokenJWT,
+            });
+        }
+        catch (err) {
             next(new AppError(err.message, 400));
         }
     }

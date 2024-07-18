@@ -18,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     static async comparePassword(password, hashedPassword) {
-      return bcrypt.compare(password, hashedPassword);
+      return bcrypt.compare(password, hashedPassword)
     }
 
     changedPasswordAfter(jwtIat) {

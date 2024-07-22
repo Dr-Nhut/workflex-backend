@@ -8,6 +8,7 @@ const mailer = require('../utils/mailer');
 const AppError = require('../utils/errorHandler');
 const sequelizeErrorHandler = require('../utils/sequelizeErrorHandler');
 const { Op } = require('sequelize');
+const { OK, Created } = require('../core/success.reponse');
 
 
 class AuthController {
@@ -113,10 +114,11 @@ class AuthController {
                     { expiresIn: process.env.JWT_SECRET_EXPIRATION }
                 );
 
-                res.status(200).json({
-                    status: 'success',
-                    token,
-                });
+                return OK.create({
+                    message: "Login Successfully!!!", metadata: {
+                        token: token,
+                    }
+                }).send(res);
             }
         }
         catch (err) {

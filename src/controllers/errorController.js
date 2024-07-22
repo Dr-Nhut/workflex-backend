@@ -8,7 +8,6 @@ const handleTokenExpiredError = () => {
     return new AppError('Tài khoản quá hạn! Vui lòng đăng nhập lại!!!', 401);
 }
 
-
 module.exports = (err, req, res, next) => {
     err.statusCode = err.statusCode || 500;
     err.status = err.status || 'error';

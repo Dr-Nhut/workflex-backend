@@ -1,5 +1,6 @@
-const crypto = require('crypto');
+const { User } = require('../../models');
 const conn = require('../config/db.config');
+const AppError = require('../utils/errorHandler');
 
 
 class UserController {
@@ -81,6 +82,23 @@ class UserController {
                 res.json(rows[0])
             })
             .catch(err => console.log(err))
+    }
+
+    async deleteMe(req, res, next) {
+        try {
+            const user = await User.findByPk(req.user.id);
+
+            user.active = false;
+            await user.save();
+
+            res.status(204).json({
+                status: 'success',
+                message: 'Tài khoản đã được khóa!',
+                data: null,
+            })
+        } catch (err) {
+            next(new AppError(err.message, 500));
+        }
     }
 }
 

@@ -13,4 +13,6 @@ router.patch("/update-avatar", AuthController.getUserId, uploadAvatar.single('av
 
 router.patch("/update-infor", AuthController.getUserId, UserController.updateInfor);
 
+router.delete("/deleteMe", AuthController.protect, UserController.deleteMe);
+
 module.exports = router;

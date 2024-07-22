@@ -123,6 +123,10 @@ module.exports = (sequelize, DataTypes) => {
     bankAccount: DataTypes.STRING,
     dayOfBirth: DataTypes.DATE,
     experience: DataTypes.STRING,
+    active: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+    },
   }, {
     sequelize,
     modelName: 'User',

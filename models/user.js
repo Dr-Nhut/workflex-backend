@@ -13,8 +13,8 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      User.belongsToMany(models.Category, { through: 'UserCategories' });
-      User.belongsToMany(models.Skill, { through: 'UserSkills' });
+      this.belongsToMany(models.Category, { through: 'UserCategories' });
+      this.belongsToMany(models.Skill, { through: 'UserSkills' });
     }
 
     static async comparePassword(password, hashedPassword) {

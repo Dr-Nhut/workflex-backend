@@ -1,4 +1,4 @@
-const AppError = require("../utils/errorHandler");
+const { AppError } = require("../core/error.response");
 
 const handleJWTError = () => {
     return new AppError('Token không hợp lệ!!!', 401);
@@ -8,9 +8,13 @@ const handleTokenExpiredError = () => {
     return new AppError('Tài khoản quá hạn! Vui lòng đăng nhập lại!!!', 401);
 }
 
+const handleSequelizeUniqueConstraintError = (message) => {
+    return new AppError(message, 400);
+}
+
 module.exports = (err, req, res, next) => {
-    err.statusCode = err.statusCode || 500;
-    err.status = err.status || 'error';
+    err.statusCode = err.status || 500;
+    err.status = `${err.status}`.startsWith('4') ? 'fail' : 'error';
 
     if (process.env.NODE_ENV === 'development') {
         // if (err.name === 'JsonWebTokenError') {
@@ -21,12 +25,13 @@ module.exports = (err, req, res, next) => {
         //     err = handleTokenExpiredError();
         // }
         const errObj = {
+            'SequelizeUniqueConstraintError': handleSequelizeUniqueConstraintError,
             'JsonWebTokenError': handleJWTError,
             'TokenExpiredError': handleTokenExpiredError
         }
 
         if (errObj[err.name]) {
-            err = errObj[err.name]()
+            err = errObj[err.name](err.message)
         }
 
         res.status(err.statusCode).json({
@@ -50,6 +55,4 @@ module.exports = (err, req, res, next) => {
         }
 
     }
-
-
 }

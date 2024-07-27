@@ -1,5 +1,5 @@
 const { Category } = require('../../models');
-const AppError = require('../utils/errorHandler');
+const { AppError } = require('../core/error.response');
 const sequelizeErrorHandler = require('../utils/sequelizeErrorHandler');
 
 class CategoryController {

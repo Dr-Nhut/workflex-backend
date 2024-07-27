@@ -8,7 +8,8 @@ const mailer = require('../utils/mailer');
 const AppError = require('../utils/errorHandler');
 const sequelizeErrorHandler = require('../utils/sequelizeErrorHandler');
 const { Op } = require('sequelize');
-const { OK, Created } = require('../core/success.reponse');
+const { OK } = require('../core/success.reponse');
+const { register } = require('../services/auth.services');
 
 
 class AuthController {
@@ -47,47 +48,56 @@ class AuthController {
         })
     }
 
+    // async registerUser(req, res, next) {
+    //     const { name, email, password, passwordConfirm, address, role, sex, bankAccount, phone, categories, dataOfBirth, experience, skills } = req.body;
+
+    //     if (password !== passwordConfirm) {
+    //         next(new AppError('Mật khẩu không khớp!!!', 400))
+    //     }
+
+    //     const transaction = await sequelize.transaction();
+    //     try {
+    //         const avatar = sex ? 'avatar-default/avatar-man.png' : 'avatar-default/avatar-woman.png'
+    //         const newUser = await User.create({
+    //             name, email, password, address, role, avatar, sex, bankAccount, phone, dataOfBirth, experience
+    //         }, {
+    //             transaction
+    //         });
+
+    //         await newUser.addCategories(categories, {
+    //             transaction
+    //         });
+
+    //         if (role === 'fre') {
+    //             await newUser.addSkills(skills, {
+    //                 transaction
+    //             });
+    //         };
+
+    //         await newUser.reload({ include: [Category, Skill], transaction });
+    //         transaction.commit();
+
+    //         const token = await jwt.sign({ id: newUser.id }, process.env.JWT_SECRET_KEY, { expiresIn: process.env.JWT_SECRET_EXPIRATION });
+
+    //         res.status(200).json({
+    //             status: 'success',
+    //             message: 'Đăng ký tài khoản thành công!!!',
+    //             token,
+    //             data: newUser,
+    //         })
+    //     }
+    //     catch (err) {
+    //         await transaction.rollback();
+    //         sequelizeErrorHandler(err, next);
+    //     }
+    // }
+
     async registerUser(req, res, next) {
-        const { name, email, password, passwordConfirm, address, role, sex, bankAccount, phone, categories, dataOfBirth, experience, skills } = req.body;
-
-        if (password !== passwordConfirm) {
-            next(new AppError('Mật khẩu không khớp!!!', 400))
-        }
-
-        const transaction = await sequelize.transaction();
         try {
-            const avatar = sex ? 'avatar-default/avatar-man.png' : 'avatar-default/avatar-woman.png'
-            const newUser = await User.create({
-                name, email, password, address, role, avatar, sex, bankAccount, phone, dataOfBirth, experience
-            }, {
-                transaction
-            });
-
-            await newUser.addCategories(categories, {
-                transaction
-            });
-
-            if (role === 'fre') {
-                await newUser.addSkills(skills, {
-                    transaction
-                });
-            };
-
-            await newUser.reload({ include: [Category, Skill], transaction });
-            transaction.commit();
-
-            const token = await jwt.sign({ id: newUser.id }, process.env.JWT_SECRET_KEY, { expiresIn: process.env.JWT_SECRET_EXPIRATION });
-
-            res.status(200).json({
-                status: 'success',
-                message: 'Đăng ký tài khoản thành công!!!',
-                token,
-                data: newUser,
-            })
+            return OK.create(await register(req.body)).send(res)
         }
         catch (err) {
-            await transaction.rollback();
-            sequelizeErrorHandler(err, next);
+            next(new AppError(err.message, 401));
         }
     }
 

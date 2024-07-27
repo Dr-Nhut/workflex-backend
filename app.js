@@ -10,7 +10,7 @@ const { blockBidding, blockJob } = require('./src/utils/schedule');
 const { Sequelize, DataTypes } = require("sequelize");
 const { config } = require("dotenv");
 const globalErorHandler = require("./src/controllers/errorController");
-const AppError = require('./src/utils/errorHandler');
+const { AppError } = require('./src/core/error.response');
 const { default: helmet } = require('helmet');
 const compression = require('compression');
 

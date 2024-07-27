@@ -1,7 +1,7 @@
 const conn = require('../config/db.config')
 const { Skill } = require('../../models');
 const sequelizeErrorHandler = require("../utils/sequelizeErrorHandler");
-const AppError = require('../utils/errorHandler');
+const { AppError } = require('../core/error.response');
 
 class SkillController {
     async getAll(req, res, next) {

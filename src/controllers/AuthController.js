@@ -5,7 +5,7 @@ require('dotenv/config');
 const { User, Category, Skill, sequelize } = require('../../models');
 const conn = require('../config/db.config')
 const mailer = require('../utils/mailer');
-const AppError = require('../utils/errorHandler');
+const { AppError } = require('../core/error.response');
 const sequelizeErrorHandler = require('../utils/sequelizeErrorHandler');
 const { Op } = require('sequelize');
 const { OK } = require('../core/success.reponse');
@@ -93,12 +93,7 @@ class AuthController {
     // }
 
     async registerUser(req, res, next) {
-        try {
-            return OK.create(await register(req.body)).send(res)
-        }
-        catch (err) {
-            next(new AppError(err.message, 401));
-        }
+        return OK.create(await register(req.body)).send(res)
     }
 
     async login(req, res, next) {

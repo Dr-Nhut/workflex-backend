@@ -18,9 +18,16 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       allowNull: false,
     },
-    refreshToken: {
+    privateKey: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+    },
+    refreshTokenUsed: {
       type: DataTypes.ARRAY(DataTypes.STRING),
       defaultValue: []
+    },
+    refreshToken: {
+      type: DataTypes.STRING,
     }
   }, {
     sequelize,

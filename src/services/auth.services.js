@@ -4,7 +4,8 @@ require('dotenv/config');
 const { User, sequelize } = require('../../models');
 const KeyTokenServices = require('./keyToken.services');
 const { createTokenPair } = require('../utils/auth/authUtils');
-const { BadRequestError } = require('../core/error.response');
+const { BadRequestError, UnauthorizedError } = require('../core/error.response');
+const { findUserByEmail } = require('./user.services');
 
 class AuthServies {
     static register = async (user) => {
@@ -19,27 +20,16 @@ class AuthServies {
 
         if (newUser) {
             // create privateKey, publicKey
-            const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
-                modulusLength: 2048,
-                publicKeyEncoding: {
-                    type: 'pkcs1',
-                    format: 'pem'
-                },
-                privateKeyEncoding: {
-                    type: 'pkcs1',
-                    format: 'pem'
-                }
-            })
+            const privateKey = crypto.randomBytes(64).toString('hex');
+            const publicKey = crypto.randomBytes(64).toString('hex');
 
-            const publicKeyString = await KeyTokenServices.createKeyToken({ userId: newUser.id, publicKey });
+            const publicKeyString = await KeyTokenServices.createKeyToken({ userId: newUser.id, publicKey, privateKey });
 
             if (!publicKeyString) {
                 throw new BadRequestError('Public key string error');
             }
 
-            const publicKeyObject = crypto.createPublicKey(publicKeyString);
-
-            const tokens = await createTokenPair({ id: newUser.id, email }, publicKeyObject, privateKey);
+            const tokens = await createTokenPair({ id: newUser.id, email }, publicKey, privateKey);
 
             return {
                 code: '201',
@@ -53,6 +43,38 @@ class AuthServies {
         return {
             code: '200',
             metadata: null
+        }
+    }
+
+    static login = async ({ email, password, refreshToken = null }) => {
+        if (!email || !password) {
+            throw new BadRequestError('Tài khoản hoặc mật khẩu bỏ trống!');
+        }
+
+        const user = await findUserByEmail({ email, withPassword: true });
+
+        if (!user || !(await User.comparePassword(password, user.password))) {
+            throw new UnauthorizedError('Tài khoản hoặc mật khẩu không đúng!');
+        }
+        else {
+            // create privateKey, publicKey
+            const privateKey = crypto.randomBytes(64).toString('hex');
+            const publicKey = crypto.randomBytes(64).toString('hex');
+
+            const publicKeyString = await KeyTokenServices.createKeyToken({ userId: user.id, publicKey, privateKey });
+
+            if (!publicKeyString) {
+                throw new BadRequestError('Public key string error');
+            }
+
+            const tokens = await createTokenPair({ id: user.id, email }, publicKey, privateKey);
+
+            return {
+                message: 'Đăng nhập thành công!',
+                metadata: {
+                    tokens,
+                }
+            }
         }
     }
 }

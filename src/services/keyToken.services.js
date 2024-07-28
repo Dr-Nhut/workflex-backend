@@ -1,16 +1,13 @@
 'use strict';
 const { KeyToken } = require('../../models');
+const SequelizeHelpers = require('../utils/sequelizeHelpers');
 
 class KeyTokenServices {
-    static createKeyToken = async ({ userId, publicKey }) => {
+    static createKeyToken = async ({ userId, publicKey, privateKey }) => {
         try {
-            const publicKeyString = publicKey.toString();
-            const token = await KeyToken.create({
-                userId,
-                publicKey: publicKeyString,
-            })
+            const newKeyToken = await SequelizeHelpers.upsert(KeyToken, { userId }, { publicKey, privateKey });
 
-            return token ? token.publicKey : null;
+            return newKeyToken.publicKey;
         } catch (err) {
             return {
                 status: 'error',

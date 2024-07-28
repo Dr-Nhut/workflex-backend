@@ -16,6 +16,12 @@ class BadRequestError extends ErrorResponse {
     }
 }
 
+class UnauthorizedError extends ErrorResponse {
+    constructor(message = Reason.UNAUTHORIZED, status = StatusCode.UNAUTHORIZED) {
+        super(message, status);
+    }
+}
+
 class ForbiddenRequestError extends ErrorResponse {
     constructor(message = Reason.FORBIDDEN, status = StatusCode.FORBIDDEN) {
         super(message, status);
@@ -36,6 +42,7 @@ class AppError extends Error {
 
 module.exports = {
     BadRequestError,
+    UnauthorizedError,
     ForbiddenRequestError,
     AppError
 };

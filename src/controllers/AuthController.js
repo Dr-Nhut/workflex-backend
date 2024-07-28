@@ -9,7 +9,7 @@ const { AppError } = require('../core/error.response');
 const sequelizeErrorHandler = require('../utils/sequelizeErrorHandler');
 const { Op } = require('sequelize');
 const { OK } = require('../core/success.reponse');
-const { register } = require('../services/auth.services');
+const { register, login } = require('../services/auth.services');
 
 
 class AuthController {
@@ -97,38 +97,7 @@ class AuthController {
     }
 
     async login(req, res, next) {
-        try {
-            const { email, password } = req.body;
-
-            if (!email || !password) {
-                return next(new AppError('Email và mật khẩu không được bỏ trống!!!', 400))
-            }
-
-            const user = await User.scope('withPassword').findOne({
-                where: {
-                    email
-                },
-            });
-
-            if (!user || !(await User.comparePassword(password, user.password))) {
-                return next(new AppError('Tài khoản hoặc mật khẩu không đúng!!!', 401));
-            }
-            else {
-                const token = jwt.sign({ id: user.id },
-                    process.env.JWT_SECRET_KEY,
-                    { expiresIn: process.env.JWT_SECRET_EXPIRATION }
-                );
-
-                return OK.create({
-                    message: "Login Successfully!!!", metadata: {
-                        token: token,
-                    }
-                }).send(res);
-            }
-        }
-        catch (err) {
-            next(new AppError(err.message, 500));
-        }
+        return OK.create(await login(req.body)).send(res);
     }
 
     getUser(req, res) {

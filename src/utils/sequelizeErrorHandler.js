@@ -1,5 +1,5 @@
 const { ValidationError } = require('sequelize');
-const AppError = require('./errorHandler');
+const { AppError } = require('../core/error.response');
 
 module.exports = (err, next) => {
     if (err instanceof ValidationError) {

@@ -10,9 +10,34 @@ const { blockBidding, blockJob } = require('./src/utils/schedule');
 const { Sequelize, DataTypes } = require("sequelize");
 const { config } = require("dotenv");
 const globalErorHandler = require("./src/controllers/errorController");
-const AppError = require('./src/utils/errorHandler');
+const { AppError } = require('./src/core/error.response');
+const { default: helmet } = require('helmet');
+const compression = require('compression');
 
 const port = 3000;
+const app = express()
+
+app.use(cookieParser());
+app.use(cors({
+    credentials: true,
+    origin: 'http://localhost:5173'
+}));
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: true }))
+
+// parse application/json
+app.use(bodyParser.json())
+
+app.use(morgan('combined'));
+
+//helps secure Express apps by setting HTTP response headers
+app.use(helmet());
+
+//The middleware will attempt to compress response bodies for all request that traverse through the middleware
+app.use(compression());
+
+app.use(express.static('public'))
+
 
 //connect database
 config();
@@ -23,26 +48,8 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
     dialectOptions: { ssl: { require: true } }
 });
 
-const app = express()
-
-app.use(cookieParser());
-app.use(cors({
-    credentials: true,
-    origin: 'http://localhost:5173'
-}));
 
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), StripeController.webhook)
-
-
-// parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: true }))
-
-// parse application/json
-app.use(bodyParser.json())
-
-app.use(morgan('combined'))
-
-app.use(express.static('public'))
 
 route(app);
 

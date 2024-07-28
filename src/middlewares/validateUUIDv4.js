@@ -1,4 +1,4 @@
-const AppError = require("../utils/errorHandler");
+const { AppError } = require("../core/error.response");
 
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const validateUUID = (req, res, next) => {

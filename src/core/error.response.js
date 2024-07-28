@@ -28,7 +28,6 @@ class ForbiddenRequestError extends ErrorResponse {
     }
 }
 
-
 class AppError extends Error {
     constructor(message, statusCode) {
         super(message)

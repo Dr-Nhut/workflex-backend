@@ -8,6 +8,12 @@ const conn = require('../config/db.config')
 const mailer = require('../utils/mailer');
 const AppError = require('../utils/errorHandler');
 const sequelizeErrorHandler = require('../utils/sequelizeErrorHandler');
+<<<<<<< Updated upstream
+=======
+const { Op } = require('sequelize');
+const { OK } = require('../core/success.reponse');
+const { register, login } = require('../services/auth.services');
+>>>>>>> Stashed changes
 
 
 class AuthController {
@@ -111,6 +117,7 @@ class AuthController {
     // }
 
     async login(req, res, next) {
+<<<<<<< Updated upstream
         try {
             const { email, password } = req.body;
 
@@ -142,6 +149,9 @@ class AuthController {
         catch {
             next(new AppError('Unexpected', 500));
         }
+=======
+        return OK.create(await login(req.body)).send(res);
+>>>>>>> Stashed changes
     }
 
     getUser(req, res) {

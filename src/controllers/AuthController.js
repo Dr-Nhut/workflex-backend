@@ -8,12 +8,9 @@ const conn = require('../config/db.config')
 const mailer = require('../utils/mailer');
 const AppError = require('../utils/errorHandler');
 const sequelizeErrorHandler = require('../utils/sequelizeErrorHandler');
-<<<<<<< Updated upstream
-=======
 const { Op } = require('sequelize');
 const { OK } = require('../core/success.reponse');
 const { register, login } = require('../services/auth.services');
->>>>>>> Stashed changes
 
 
 class AuthController {
@@ -117,41 +114,7 @@ class AuthController {
     // }
 
     async login(req, res, next) {
-<<<<<<< Updated upstream
-        try {
-            const { email, password } = req.body;
-
-            if (!email || !password) {
-                return next(new AppError('Email và mật khẩu không được bỏ trống!!!', 400))
-            }
-
-            const user = await User.scope('withPassword').findOne({
-                where: {
-                    email
-                },
-            });
-
-            if (!user || !(await User.comparePassword(password, user.password))) {
-                return next(new AppError('Tài khoản hoặc mật khẩu không đúng!!!', 401));
-            }
-            else {
-                const token = jwt.sign({ id: user.id },
-                    process.env.JWT_SECRET_KEY,
-                    { expiresIn: process.env.JWT_SECRET_EXPIRATION }
-                );
-
-                res.status(200).json({
-                    status: 'success',
-                    token,
-                });
-            }
-        }
-        catch {
-            next(new AppError('Unexpected', 500));
-        }
-=======
         return OK.create(await login(req.body)).send(res);
->>>>>>> Stashed changes
     }
 
     getUser(req, res) {

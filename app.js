@@ -53,10 +53,10 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), Strip
 
 route(app);
 
+//handle error
 app.all('*', (req, res, next) => {
     next(new AppError(`Không tìm thấy ${req.originalUrl}`, 404))
 })
-
 app.use(globalErorHandler);
 
 const server = app.listen(port, () => {

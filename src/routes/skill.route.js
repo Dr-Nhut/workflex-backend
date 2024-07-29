@@ -1,17 +1,16 @@
 const express = require('express');
 const SkillController = require('../controllers/SkillController');
 const skillRouter = express.Router();
+const { catchAsyncError } = require('../utils/catchAsyncError');
+const validateUUID = require('../middlewares/validateUUIDv4');
 
 skillRouter
     .route("/")
-    .get(SkillController.getAll)
-    .post(SkillController.create)
-
-// router.get("/all/:userId", SkillController.getAllByUser);
+    .get(catchAsyncError(SkillController.getAll))
+    .post(catchAsyncError(SkillController.create))
 
 skillRouter.route("/:id")
-    .patch(SkillController.update)
-    .delete(SkillController.delete);
-
+    .patch(validateUUID, catchAsyncError(SkillController.update))
+    .delete(validateUUID, catchAsyncError(SkillController.delete));
 
 module.exports = skillRouter;

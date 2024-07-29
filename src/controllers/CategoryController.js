@@ -1,91 +1,36 @@
 const { Category } = require('../../models');
 const { AppError } = require('../core/error.response');
+const { OK, NoContent } = require('../core/success.reponse');
+const CategoryServices = require('../services/category.services');
 const sequelizeErrorHandler = require('../utils/sequelizeErrorHandler');
 
 class CategoryController {
     async getAll(req, res, next) {
-        try {
-            const categories = await Category.findAll();
-
-            res.status(200).json({
-                status: 'success',
-                result: categories.length,
-                data: categories,
-            })
-        }
-        catch (err) {
-            next(new AppError('Unexpected error', 500));
-        }
+        return OK.create({
+            message: 'Thành công!',
+            metadata: await CategoryServices.getAll()
+        }).send(res);
     }
 
     async create(req, res, next) {
-        try {
-            const category = await Category.create({ name: req.body.name });
-
-            if (category.id) {
-                res.status(200).json({
-                    status: 'success',
-                    message: 'Thêm lĩnh vực thành công!!!',
-                    data: category
-                })
+        return OK.create({
+            message: 'Thêm mới lĩnh vực thành công!',
+            metadata: {
+                caegtory: await CategoryServices.create(req.body.name)
             }
-        }
-        catch (err) {
-            sequelizeErrorHandler(err, next);
-        }
+        }).send(res);
     }
 
     async update(req, res, next) {
-        const name = req.body.name;
-
-        if (!name) {
-            next(new AppError("Tên lĩnh vực không hợp lệ!!!", 400));
-            return;
-        }
-
-        try {
-            const [result, [updatedCategory]] = await Category.update({ name }, {
-                where: {
-                    id: req.params.id,
-                },
-                returning: true,
-            });
-
-            if (result === 0) {
-                next(new AppError("Lĩnh vực không tồn tại!!!", 404))
-            }
-            else {
-                res.status(200).json({
-                    status: 'success',
-                    message: 'Chỉnh sửa lĩnh vực thành công!!!',
-                    data: updatedCategory
-                })
-            }
-        }
-        catch (err) {
-            sequelizeErrorHandler(err, next);
-        }
+        return OK.create({
+            message: 'Cập nhật lĩnh vực thành công!',
+            metadata: await CategoryServices.update(req.params.id, req.body.name)
+        }).send(res);
     }
 
     async delete(req, res, next) {
-        try {
-            const result = await Category.destroy({
-                where: {
-                    id: req.params.id,
-                },
-            })
-            if (result === 0) {
-                next(new AppError('Lĩnh vực không tồn tại!!!', 404))
-            }
-            else {
-                res.status(204).json({
-                    status: 'success',
-                });
-            }
-        }
-        catch (err) {
-            next(new AppError("Unexpected Error", 500))
-        }
+        await CategoryServices.delete(req.params.id);
+        return NoContent.create().send(res);
     }
 
     getAllByUser(req, res) {

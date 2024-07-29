@@ -1,14 +1,6 @@
 'use strict';
-
-const StatusCode = {
-    OK: 200,
-    Created: 201,
-}
-
-const ReasonStatusCode = {
-    OK: 'success',
-    Created: 'created',
-}
+const ReasonStatusCode = require("../constants/reasonnPhrases");
+const StatusCode = require("../constants/statusCodes");
 
 class SuccessResponse {
     constructor({ message, statusCode = StatusCode.OK, reasonStatusCode = ReasonStatusCode.OK, metadata =
@@ -48,7 +40,18 @@ class Created extends SuccessResponse {
     }
 }
 
+class NoContent extends SuccessResponse {
+    constructor({ statusCode = StatusCode.NO_CONTENT, reasonStatusCode = ReasonStatusCode.NO_CONTENT }) {
+        super({ statusCode, reasonStatusCode });
+    }
+
+    static create() {
+        return new NoContent({});
+    }
+}
+
 module.exports = {
     OK,
-    Created
+    Created,
+    NoContent
 };

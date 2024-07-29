@@ -1,92 +1,36 @@
 const conn = require('../config/db.config')
 const { Skill } = require('../../models');
 const sequelizeErrorHandler = require("../utils/sequelizeErrorHandler");
-const { AppError } = require('../core/error.response');
+const SkillServices = require('../services/skill.services');
+const { OK, NoContent } = require('../core/success.reponse');
 
 class SkillController {
     async getAll(req, res, next) {
-        try {
-            const skills = await Skill.findAll();
-
-            res.status(200).json({
-                status: 'success',
-                result: skills.length,
-                data: skills,
-            })
-        }
-        catch (err) {
-            next(new AppError('Unexpected error', 500));
-        }
+        return OK.create({
+            message: 'Thành công!',
+            metadata: await SkillServices.getAll()
+        }).send(res);
     }
 
     async create(req, res, next) {
-        try {
-            const skill = await Skill.create({ name: req.body.name });
-
-            if (skill.id) {
-                res.status(200).json({
-                    status: 'success',
-                    message: 'Thêm ngôn ngữ lập trình thành công!!!',
-                    data: skill
-                })
+        return OK.create({
+            message: 'Thêm mới kỹ năng thành công!',
+            metadata: {
+                skill: await SkillServices.create(req.body.name)
             }
-        }
-        catch (err) {
-            sequelizeErrorHandler(err, next);
-        }
+        }).send(res);
     }
 
     async update(req, res, next) {
-        const name = req.body.name;
-
-        if (!name) {
-            next(new AppError("Tên ngôn ngữ lập trình không hợp lệ!!!", 400));
-            return;
-        }
-
-        try {
-            const [result, [updatedSkill]] = await Skill.update({ name }, {
-                where: {
-                    id: req.params.id,
-                },
-                returning: true,
-            });
-
-            if (result === 0) {
-                next(new AppError("Ngôn ngữ lập trình không tồn tại!!!", 404))
-            }
-            else {
-                res.status(200).json({
-                    status: 'success',
-                    message: 'Chỉnh sửa ngôn ngữ lập trình thành công!!!',
-                    data: updatedSkill
-                })
-            }
-        }
-        catch (err) {
-            sequelizeErrorHandler(err, next);
-        }
+        return OK.create({
+            message: 'Cập nhật kỹ năng thành công!',
+            metadata: await SkillServices.update(req.params.id, req.body.name)
+        }).send(res);
     }
 
     async delete(req, res, next) {
-        try {
-            const result = await Skill.destroy({
-                where: {
-                    id: req.params.id,
-                },
-            })
-            if (result === 0) {
-                next(new AppError('Ngôn ngữ lập trình không tồn tại!!!', 404))
-            }
-            else {
-                res.status(204).json({
-                    status: 'success',
-                });
-            }
-        }
-        catch (err) {
-            next(new AppError("Unexpected Error", 500))
-        }
+        await SkillServices.delete(req.params.id);
+        return NoContent.create().send(res);
     }
 
     getAllByUser(req, res) {

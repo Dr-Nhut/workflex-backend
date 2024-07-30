@@ -12,8 +12,13 @@ const evaluationRouter = require("./evaluation.route");
 const notificationRouter = require("./notification.route");
 const userRouter = require("./user.route");
 const recommendationRouter = require("./recommendation.router");
+const apiKey = require("../middlewares/apiKey");
+const checkPemission = require("../middlewares/checkPermission");
+const { catchAsyncError } = require('../utils/catchAsyncError');
 
 function route(app) {
+    app.use(catchAsyncError(apiKey));
+    app.use(catchAsyncError(checkPemission('0000'))); // permission for api key
     app.use('/api/user', userRouter);
     app.use('/api/auth', authRouter);
     app.use('/api/category', categoryRouter);

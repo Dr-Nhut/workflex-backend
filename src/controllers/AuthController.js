@@ -11,7 +11,6 @@ const { Op } = require('sequelize');
 const { OK } = require('../core/success.reponse');
 const { register, login } = require('../services/auth.services');
 
-
 class AuthController {
     checkUserExisted(req, res, next) {
         conn.promise().query(`SELECT id FROM user WHERE email = '${req.body.email}';`)
@@ -98,6 +97,10 @@ class AuthController {
 
     async login(req, res, next) {
         return OK.create(await login(req.body)).send(res);
+    }
+
+    async logout(req, res, next) {
+        return null;
     }
 
     getUser(req, res) {

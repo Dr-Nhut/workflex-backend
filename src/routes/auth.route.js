@@ -8,7 +8,8 @@ router.get('/userInfor', AuthController.getUser);
 
 router.post("/send-email-verify", AuthController.checkUserExisted, AuthController.sendEmail);
 router.post("/register", catchAsyncError(AuthController.registerUser));
-router.post("/login", AuthController.login);
+router.post("/login", catchAsyncError(AuthController.login));
+router.post("/logout", AuthController.protect, catchAsyncError(AuthController.logout));
 router.post("/forgetPassword", AuthController.forgetPassword);
 router.post("/resetPassword/:token", AuthController.resetPassword);
 router.patch("/updatePassword", AuthController.protect, AuthController.updatePassword);

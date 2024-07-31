@@ -77,6 +77,10 @@ class AuthServies {
             }
         }
     }
+
+    static logout = async (keyStore) => {
+        return await KeyTokenServices.removeById({ id: keyStore.id })
+    }
 }
 
 module.exports = AuthServies

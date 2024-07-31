@@ -9,11 +9,18 @@ class KeyTokenServices {
 
             return newKeyToken.publicKey;
         } catch (err) {
-            return {
-                status: 'error',
-                message: err.message,
-            }
+            throw err;
         }
+    }
+
+    static findKeyTokenByUserId = async ({
+        userId
+    }) => {
+        return await KeyToken.findOne({ where: { userId } });
+    }
+
+    static removeById = async ({ id }) => {
+        return await KeyToken.destroy({ where: { id } });
     }
 }
 

@@ -1,5 +1,15 @@
 const jwt = require('jsonwebtoken');
 require('dotenv/config');
+const { catchAsyncError } = require('../catchAsyncError');
+const { UnauthorizedError, NotFoundError } = require('../../core/error.response');
+
+//services
+const { findKeyTokenByUserId } = require('../../services/keyToken.services');
+
+const HEADER = {
+    CLIENT_ID: 'x-client-id',
+    AUTHORIZATION: 'authorization',
+}
 
 const createTokenPair = async (payload, publicKey, privateKey) => {
     try {
@@ -18,4 +28,28 @@ const createTokenPair = async (payload, publicKey, privateKey) => {
     }
 }
 
-module.exports = { createTokenPair }
+const authentication = catchAsyncError(async (req, res, next) => {
+    const userId = req.headers[HEADER.CLIENT_ID];
+    if (!userId) throw new UnauthorizedError('Invalid client ID');
+
+    const keyStore = await findKeyTokenByUserId({ userId })
+    if (!keyStore) throw new NotFoundError('No key store found');
+
+    let accessToken;
+    if (req.headers[HEADER.AUTHORIZATION] && req.headers[HEADER.AUTHORIZATION].startsWith('Bearer ')) {
+        accessToken = req.headers[HEADER.AUTHORIZATION].split(" ")[1];
+    }
+
+    if (!accessToken) throw new UnauthorizedError('Invalid token');
+
+    try {
+        const decode = jwt.verify(accessToken, keyStore.publicKey);
+        if (decode.id !== userId) throw new UnauthorizedError('Invalid user ID');
+        req.keyStore = keyStore;
+        return next();
+    } catch (err) {
+        throw err;
+    }
+})
+
+module.exports = { createTokenPair, authentication }

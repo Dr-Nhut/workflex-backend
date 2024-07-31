@@ -2,14 +2,13 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 require('dotenv/config');
-const { User, Category, Skill, sequelize } = require('../../models');
+const { User } = require('../../models');
 const conn = require('../config/db.config')
 const mailer = require('../utils/mailer');
 const { AppError } = require('../core/error.response');
-const sequelizeErrorHandler = require('../utils/sequelizeErrorHandler');
 const { Op } = require('sequelize');
 const { OK } = require('../core/success.reponse');
-const { register, login } = require('../services/auth.services');
+const { register, login, logout } = require('../services/auth.services');
 
 class AuthController {
     checkUserExisted(req, res, next) {
@@ -100,7 +99,10 @@ class AuthController {
     }
 
     async logout(req, res, next) {
-        return null;
+        return OK.create({
+            message: 'Logout successfully',
+            metadata: await logout(req.keyStore)
+        }).send(res);
     }
 
     getUser(req, res) {

@@ -4,7 +4,7 @@ require('dotenv/config');
 const { User, sequelize } = require('../../models');
 const KeyTokenServices = require('./keyToken.services');
 const { createTokenPair } = require('../utils/auth/authUtils');
-const { BadRequestError, UnauthorizedError } = require('../core/error.response');
+const { BadRequestError, UnauthorizedError, ForbiddenRequestError } = require('../core/error.response');
 const { findUserByEmail } = require('./user.services');
 
 class AuthServies {
@@ -61,13 +61,13 @@ class AuthServies {
             const privateKey = crypto.randomBytes(64).toString('hex');
             const publicKey = crypto.randomBytes(64).toString('hex');
 
-            const publicKeyString = await KeyTokenServices.createKeyToken({ userId: user.id, publicKey, privateKey });
+            const tokens = await createTokenPair({ id: user.id, email }, publicKey, privateKey);
+
+            const publicKeyString = await KeyTokenServices.createKeyToken({ userId: user.id, publicKey, privateKey, refreshToken: tokens.refreshToken });
 
             if (!publicKeyString) {
                 throw new BadRequestError('Public key string error');
             }
-
-            const tokens = await createTokenPair({ id: user.id, email }, publicKey, privateKey);
 
             return {
                 message: 'Đăng nhập thành công!',
@@ -80,6 +80,41 @@ class AuthServies {
 
     static logout = async (keyStore) => {
         return await KeyTokenServices.removeById({ id: keyStore.id })
+    }
+
+    static handleRefreshToken = async ({ keyStore, user, refreshToken }) => {
+        const { id, email } = user;
+
+        const refreshTokenUsed = keyStore.refreshTokenUsed;
+
+        if (refreshTokenUsed.includes(refreshToken)) {
+            await KeyTokenServices.removeById({ id: keyStore.id })
+            throw new ForbiddenRequestError('Something wrong happened!! Please try login again');
+        }
+
+        if (keyStore.refreshToken !== refreshToken) throw new UnauthorizedError('User not registered');
+
+        const foundUser = await findUserByEmail({ email });
+
+        if (!foundUser) throw new UnauthorizedError("User not existed");
+
+        const tokens = await createTokenPair({ id, email }, keyStore.publicKey, keyStore.privateKey);
+
+        //update keyToken
+        await KeyTokenServices.update({
+            updateFields: {
+                refreshToken,
+                refreshTokenUsed: [...keyStore.refreshTokenUsed, refreshToken]
+            },
+            filters: { id: keyStore.id }
+        });
+
+        return {
+            metadata: {
+                user,
+                tokens,
+            }
+        }
     }
 }
 

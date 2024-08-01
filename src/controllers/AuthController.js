@@ -8,7 +8,7 @@ const mailer = require('../utils/mailer');
 const { AppError } = require('../core/error.response');
 const { Op } = require('sequelize');
 const { OK } = require('../core/success.reponse');
-const { register, login, logout } = require('../services/auth.services');
+const { register, login, logout, handleRefreshToken } = require('../services/auth.services');
 
 class AuthController {
     checkUserExisted(req, res, next) {
@@ -103,6 +103,15 @@ class AuthController {
             message: 'Logout successfully',
             metadata: await logout(req.keyStore)
         }).send(res);
+    }
+
+    async refreshToken(req, res, next) {
+        return OK.create(await handleRefreshToken({
+            keyStore: req.keyStore,
+            user: req.user,
+            refreshToken: req.refreshToken
+        })).send(res);
+
     }
 
     getUser(req, res) {

@@ -10,7 +10,7 @@ const { blockBidding, blockJob } = require('./src/utils/schedule');
 const { Sequelize, DataTypes } = require("sequelize");
 const { config } = require("dotenv");
 const globalErorHandler = require("./src/controllers/errorController");
-const { AppError } = require('./src/core/error.response');
+const { AppError, BadRequestError } = require('./src/core/error.response');
 const { default: helmet } = require('helmet');
 const compression = require('compression');
 
@@ -54,7 +54,7 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), Strip
 route(app);
 
 app.all('*', (req, res, next) => {
-    next(new AppError(`Không tìm thấy ${req.originalUrl}`, 404))
+    throw new BadRequestError('Not found url: ' + req.originalUrl);
 })
 
 app.use(globalErorHandler);

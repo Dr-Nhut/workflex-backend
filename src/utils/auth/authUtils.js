@@ -9,6 +9,7 @@ const { findKeyTokenByUserId } = require('../../services/keyToken.services');
 const HEADER = {
     CLIENT_ID: 'x-client-id',
     AUTHORIZATION: 'authorization',
+    REFRESHTOKEN: 'refresh-token',
 }
 
 const createTokenPair = async (payload, publicKey, privateKey) => {
@@ -52,4 +53,26 @@ const authentication = catchAsyncError(async (req, res, next) => {
     }
 })
 
-module.exports = { createTokenPair, authentication }
+const authRefreshToken = catchAsyncError(async (req, res, next) => {
+    const userId = req.headers[HEADER.CLIENT_ID];
+    if (!userId) throw new UnauthorizedError('Invalid client ID');
+
+    const keyStore = await findKeyTokenByUserId({ userId })
+    if (!keyStore) throw new NotFoundError('No key store found');
+
+    let refreshToken = req.headers[HEADER.REFRESHTOKEN];
+    if (!refreshToken) throw new UnauthorizedError('Invalid token');
+
+    try {
+        const decode = jwt.verify(refreshToken, keyStore.privateKey);
+        if (decode.id !== userId) throw new UnauthorizedError('Invalid user ID');
+        req.keyStore = keyStore;
+        req.user = decode;
+        req.refreshToken = refreshToken;
+        return next();
+    } catch (err) {
+        throw err;
+    }
+})
+
+module.exports = { createTokenPair, authentication, authRefreshToken }

@@ -1,6 +1,6 @@
 'use strict';
 const { KeyToken } = require('../../models');
-const SequelizeHelpers = require('../utils/sequelizeHelpers');
+const SequelizeHelpers = require('../utils/SequelizeHelpers');
 
 class KeyTokenServices {
     static createKeyToken = async ({ userId, publicKey, privateKey, refreshToken }) => {

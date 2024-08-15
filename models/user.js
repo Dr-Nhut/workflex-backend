@@ -15,6 +15,10 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       this.belongsToMany(models.Category, { through: 'UserCategories' });
       this.belongsToMany(models.Skill, { through: 'UserSkills' });
+      this.hasMany(models.Job, {
+        foreignKey: 'creatorId',
+        constraints: false,
+      });
     }
 
     static async comparePassword(password, hashedPassword) {

@@ -46,6 +46,7 @@ const authentication = catchAsyncError(async (req, res, next) => {
     try {
         const decode = jwt.verify(accessToken, keyStore.publicKey);
         if (decode.id !== userId) throw new UnauthorizedError('Invalid user ID');
+        req.user = decode;
         req.keyStore = keyStore;
         return next();
     } catch (err) {

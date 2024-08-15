@@ -4,7 +4,8 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon --inspect app.js",
+    "build": "tsc",
+    "start": "nodemon --inspect dist/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "nhutb1906738",
@@ -30,8 +31,10 @@
     "stripe": "^14.2.0"
   },
   "devDependencies": {
+    "@types/node": "^22.2.0",
     "morgan": "^1.10.0",
     "nodemon": "^3.0.1",
-    "sequelize-cli": "^6.6.2"
+    "sequelize-cli": "^6.6.2",
+    "typescript": "^5.5.4"
   }
 }

@@ -1,5 +1,7 @@
 const crypto = require('crypto');
-const conn = require('../config/db.config')
+const conn = require('../config/db.config');
+const JobServices = require('../services/job.services');
+const { Created, OK } = require('../core/success.reponse')
 
 class JobController {
     getJobByStatus(req, res, next) {
@@ -105,23 +107,21 @@ class JobController {
             .catch(err => console.error(err));
     }
 
-    create(req, res, next) {
-        const { employerId, name, description, categoryId, maxBudget, experience, duration, bidDeadline, dateStart, type, skills } = req.body;
+    async getAll(req, res, next) {
+        const jobs = await JobServices.getAll();
+        return OK.create({
+            message: "Success",
+            result: jobs.length,
+            metadata: jobs
+        }).send(res);
+    }
 
-        const jobId = crypto.randomUUID();
+    async create(req, res, next) {
 
-        const sql = "INSERT INTO job (id, name, description, categoryId, employerId, maxBudget, experience, duration, bidDeadline, dateStart, type, status, createAt ) VALUES(?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        const id = crypto.randomUUID();
-        conn.promise().query(sql, [jobId, name, description, categoryId, employerId, maxBudget, experience, duration, new Date(bidDeadline), new Date(dateStart), type, 1, new Date()])
-            .then(() => {
-                if (!skills) res.json({ status: 'success', message: 'Đăng công việc thành công!' });
-                const sql = `INSERT INTO skilljob (skillId, jobId) VALUES ${skills.map(skill => `('${skill}', '${jobId}')`).join(',')}`;
-                return conn.promise().query(sql)
-            })
-            .then(() => {
-                res.json({ status: 'success', message: 'Đăng công việc thành công!' });
-            })
-            .catch(err => console.error(err));
+        return Created.create({
+            message: 'Job created successfully!',
+            metadata: await JobServices.create(req.body, req.user.id)
+        }).send(res);
     }
 
     getDetailJob(req, res) {

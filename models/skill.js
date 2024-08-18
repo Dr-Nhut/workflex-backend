@@ -12,7 +12,8 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Skill.belongsToMany(models.User, { through: 'UserSkills' });
+      this.belongsToMany(models.User, { through: 'UserSkills' });
+      this.belongsToMany(models.Job, { through: 'JobSkills' });
     }
   }
   Skill.init({

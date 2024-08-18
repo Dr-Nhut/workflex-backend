@@ -13,13 +13,12 @@ const { authentication } = require('../utils/auth/authUtils');
 // router.get("/freelancer-completed-and-fail-jobs", JobController.getFreelancerCompletedAndFailJob)
 // router.get("/freelancer-current-and-fail-jobs", JobController.getFreelancerCurrentAndFailJob)
 // // router.get("/freelancer-current-jobs-v2", JobController.getFreelancerCurrentJobs)
-// router.get("/:id", JobController.getDetailJob);
-router.get("/", authentication, catchAsyncError(JobController.getAll));
+router.get("/:id", catchAsyncError(JobController.getById));
+router.get("/", catchAsyncError(JobController.getAll));
 
 router.post("/", authentication, catchAsyncError(JobController.create));
 
-router.patch('/:id', JobController.update);
-router.delete('/:id', JobController.delete);
-
+router.patch('/:id', authentication, catchAsyncError(JobController.update));
+router.delete('/:id', authentication, catchAsyncError(JobController.delete));
 
 module.exports = router;

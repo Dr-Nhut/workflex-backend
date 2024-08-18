@@ -8,6 +8,13 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'creatorId',
         constraints: false,
       });
+
+      this.belongsTo(models.Category, {
+        foreignKey: 'categoryId',
+        constraints: false,
+      });
+
+      this.belongsToMany(models.Skill, { through: 'JobSkills' });
     }
   }
 
@@ -29,10 +36,20 @@ module.exports = (sequelize, DataTypes) => {
       minBudget: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        validate: {
+          min: 1000,
+        }
       },
       maxBudget: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        validate: {
+          isGreaterThanMinBudget(value) {
+            if (parseInt(value) <= parseInt(this.minBudget)) {
+              throw new Error('maxBudget must be greater than minBudget.');
+            }
+          }
+        }
       },
       experience: {
         type: DataTypes.ENUM,
@@ -43,14 +60,32 @@ module.exports = (sequelize, DataTypes) => {
       dateStart: {
         type: DataTypes.DATE,
         allowNull: false,
+        validate: {
+          isGreaterThanBidExperition(value) {
+            if (new Date(value) <= new Date(this.bidExpiration)) {
+              throw new Error('dateStart must be greater than bidExpiration.');
+            }
+          }
+        }
       },
       dateEnd: {
         type: DataTypes.DATE,
         allowNull: false,
+        validate: {
+          isGreaterThanDateStart(value) {
+            if (new Date(value) <= new Date(this.dateStart)) {
+              throw new Error('dateEnd must be greater than dateStart.');
+            }
+          }
+        }
       },
       bidExpiration: {
         type: DataTypes.DATE,
         allowNull: false,
+        validate: {
+          isDate: true,
+          isAfter: new Date().toString(),
+        }
       },
       reasonRefused: {
         type: DataTypes.TEXT,

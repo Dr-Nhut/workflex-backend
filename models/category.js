@@ -12,7 +12,11 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Category.belongsToMany(models.User, { through: 'UserCategories' });
+      this.belongsToMany(models.User, { through: 'UserCategories' });
+      this.hasMany(models.Job, {
+        foreignKey: 'categoryId',
+        constraints: false,
+      })
     }
   }
   Category.init({

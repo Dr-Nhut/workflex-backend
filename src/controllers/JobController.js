@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const conn = require('../config/db.config');
 const JobServices = require('../services/job.services');
-const { Created, OK } = require('../core/success.reponse')
+const { Created, OK, NoContent } = require('../core/success.reponse')
 
 class JobController {
     getJobByStatus(req, res, next) {
@@ -116,6 +116,13 @@ class JobController {
         }).send(res);
     }
 
+    async getById(req, res, next) {
+        return OK.create({
+            message: "Success",
+            metadata: await JobServices.getById(req.params.id)
+        }).send(res);
+    }
+
     async create(req, res, next) {
 
         return Created.create({
@@ -138,22 +145,17 @@ class JobController {
             .catch((err) => console.log(err));
     }
 
-    update(req, res, next) {
-        const id = req.params.id;
-        const { name = null, description = null, categoryId = null, employerId = null, maxBudget = null, experience = null, duration = null, bidDeadline = null, dateStart = null, type = null, status = null, reasonRefused = null, completedAt = null } = req.body;
-
-        const sql = `UPDATE job SET name = IFNULL(?, name), description = IFNULL(?, description), categoryId = IFNULL(?, categoryId), employerId = IFNULL(?, employerId), maxBudget = IFNULL(?, maxBudget), experience = IFNULL(?, experience), duration = IFNULL(?, duration), bidDeadline = IFNULL(?, bidDeadline), dateStart = IFNULL(?, dateStart), type = IFNULL(?, type), status = IFNULL(?, status), reasonRefused = IFNULL(?, reasonRefused), completedAt = IFNULL(?, completedAt) WHERE id='${id}';`
-        conn.promise().query(sql, [name, description, categoryId, employerId, maxBudget, experience, duration, bidDeadline ? new Date(bidDeadline) : null, dateStart ? new Date(dateStart) : null, type, status, reasonRefused, completedAt ? new Date(completedAt) : null])
-            .then(() => res.json({ message: 'Công việc đã được thay đổi' }))
-            .catch((err) => console.log(err));
+    async update(req, res, next) {
+        return OK.create({
+            message: await JobServices.update({ job: req.body, jobId: req.params.id, creatorId: req.user.id }) ? 'Update successfully' : "Don't update"
+        }).send(res)
     }
 
-    delete(req, res, next) {
-        const id = req.params.id;
-        conn.promise().query(`DELETE FROM job WHERE id='${id}'`)
-            .then(() => res.json({ message: 'Đã xóa công việc.' }))
-            .catch((err) => console.log(err));
+    async delete(req, res, next) {
+        await JobServices.delete({
+            jobId: req.params.id, creatorId: req.user.id
+        })
+        return NoContent.create().send(res);
     }
 }
-
 module.exports = new JobController;

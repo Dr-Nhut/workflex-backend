@@ -15,6 +15,11 @@ module.exports = (sequelize, DataTypes) => {
       });
 
       this.belongsToMany(models.Skill, { through: 'JobSkills' });
+
+      this.hasMany(models.Offer, {
+        foreignKey: 'jobId',
+        constraints: false,
+      })
     }
   }
 

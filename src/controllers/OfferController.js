@@ -2,6 +2,8 @@ const crypto = require('crypto');
 const conn = require('../config/db.config')
 const schedule = require('node-schedule');
 const { blockJob } = require('../utils/schedule');
+const { Created } = require('../core/success.reponse');
+const OfferServices = require('../services/offer.services');
 
 class OfferController {
     createOffer(req, res, next) {
@@ -48,6 +50,16 @@ class OfferController {
         conn.promise().query(sql)
             .then(([rows, fields]) => res.json(rows[0]))
             .catch((err => console.error(err)));
+    }
+
+    async create(req, res, next) {
+        return Created.create({
+            metadata: await OfferServices.create({
+                creatorId: req.user.id,
+                jobId: req.params.id,
+                offerData: req.body
+            })
+        }).send(res);
     }
 
     update(req, res) {

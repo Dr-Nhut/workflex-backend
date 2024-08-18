@@ -19,6 +19,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'creatorId',
         constraints: false,
       });
+      this.hasMany(models.Offer, {
+        foreignKey: 'creatorId',
+        constraints: false,
+      });
     }
 
     static async comparePassword(password, hashedPassword) {

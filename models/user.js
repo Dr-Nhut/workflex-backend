@@ -15,12 +15,29 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       this.belongsToMany(models.Category, { through: 'UserCategories' });
       this.belongsToMany(models.Skill, { through: 'UserSkills' });
+
       this.hasMany(models.Job, {
         foreignKey: 'creatorId',
         constraints: false,
       });
+
       this.hasMany(models.Offer, {
         foreignKey: 'creatorId',
+        constraints: false,
+      });
+
+      this.hasMany(models.Contract, {
+        foreignKey: 'employerId',
+        constraints: false,
+      });
+
+      this.hasMany(models.Contract, {
+        foreignKey: 'freelancerId',
+        constraints: false,
+      });
+
+      this.hasMany(models.Contract, {
+        foreignKey: 'lastUserModified',
         constraints: false,
       });
     }

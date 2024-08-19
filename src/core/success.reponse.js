@@ -31,7 +31,7 @@ class OK extends SuccessResponse {
 }
 
 class Created extends SuccessResponse {
-    constructor({ message, statusCode = StatusCode.Created, reasonStatusCode = ReasonStatusCode.Created, metadata }) {
+    constructor({ message, statusCode = StatusCode.CREATED, reasonStatusCode = ReasonStatusCode.CREATED, metadata }) {
         super({ message, statusCode, reasonStatusCode, metadata });
     }
 

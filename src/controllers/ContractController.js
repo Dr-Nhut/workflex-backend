@@ -1,29 +1,59 @@
-const crypto = require('crypto');
 const conn = require('../config/db.config');
+const { Created, NoContent, OK } = require('../core/success.reponse');
+const ContractServices = require('../services/contract.services');
 
 class ContractController {
-    createContract(req, res) {
-        const { employerId, offerId } = req.body;
+    async getByUser(req, res, next) {
+        const contracts = await ContractServices.getByUser({ userId: req.user.id })
+        return OK.create({
+            message: 'success',
+            metadata: {
+                length: contracts.length,
+                data: contracts
+            }
+        }).send(res);
+    }
 
-        console.log(employerId, offerId);
+    async create(req, res, next) {
+        const { dateStart, dateEnd, value, offerId, jobId } = req.body;
 
-        const contractId = crypto.randomUUID();
-
-        const sql = "INSERT INTO contract (id, employerId, offerId, signingDate) VALUES(?, ?, ?, ?)";
-        conn.promise().query(sql, [contractId, employerId, offerId, new Date()])
-            .then(() => {
-                res.json({ status: 'success', message: 'Tạo hợp đồng thành công!' });
+        return Created.create({
+            message: "Create contract successfully!",
+            metadata: await ContractServices.create({
+                contractData: { dateStart, dateEnd, value },
+                jobId,
+                offerId,
+                userId: req.user.id
             })
-            .catch(err => console.error(err));
+        }).send(res)
     }
 
-    getContractByOffer(req, res) {
-        const offerId = req.query.offerId;
-        const sql = `SELECT * FROM contract WHERE offerId='${offerId}'`
-        conn.promise().query(sql)
-            .then(([rows, fields]) => res.json(rows[0]))
-            .catch((err => console.error(err)));
+    async update(req, res, next) {
+        return OK.create({
+            message: "Update contract successfully!",
+            metadata: await ContractServices.update({
+                contractData: req.body,
+                contractId: req.params.id,
+                userId: req.user.id
+            })
+        }).send(res)
     }
+
+    async delete(req, res, next) {
+        await ContractServices.delete({
+            contractId: req.params.id,
+            userId: req.user.id
+        })
+        return NoContent.create().send(res);
+    }
+
+    // getByOffer(req, res, next) {
+    //     const offerId = req.query.offerId;
+    //     const sql = `SELECT * FROM contract WHERE offerId='${offerId}'`
+    //     conn.promise().query(sql)
+    //         .then(([rows, fields]) => res.json(rows[0]))
+    //         .catch((err => console.error(err)));
+    // }
 }
 
 module.exports = new ContractController;

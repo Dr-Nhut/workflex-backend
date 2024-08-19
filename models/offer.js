@@ -12,6 +12,11 @@ module.exports = (sequelize, DataTypes) => {
                 foreignKey: 'jobId',
                 constraints: false,
             })
+
+            this.hasOne(models.Contract, {
+                foreignKey: 'offerId',
+                constraints: false,
+            })
         }
     }
 
@@ -51,5 +56,6 @@ module.exports = (sequelize, DataTypes) => {
             modelName: "Offer",
         }
     );
+
     return Offer;
 };

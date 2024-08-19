@@ -20,6 +20,11 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'jobId',
         constraints: false,
       })
+
+      this.hasOne(models.Contract, {
+        foreignKey: 'jobId',
+        constraints: false,
+      })
     }
   }
 

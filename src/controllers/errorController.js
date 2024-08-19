@@ -8,7 +8,7 @@ const handleTokenExpiredError = () => {
     return new AppError('Tài khoản quá hạn! Vui lòng đăng nhập lại!!!', 401);
 }
 
-const handleSequelizeUniqueConstraintError = (message) => {
+const handleSequelize = (message) => {
     return new AppError(message, 400);
 }
 
@@ -17,17 +17,11 @@ module.exports = (err, req, res, next) => {
     err.status = `${err.status}`.startsWith('4') ? 'fail' : 'error';
 
     if (process.env.NODE_ENV === 'development') {
-        // if (err.name === 'JsonWebTokenError') {
-        //     err = handleJWTError();
-        // }
-
-        // if (err.name === 'TokenExpiredError') {
-        //     err = handleTokenExpiredError();
-        // }
         const errObj = {
-            'SequelizeUniqueConstraintError': handleSequelizeUniqueConstraintError,
+            'SequelizeUniqueConstraintError': handleSequelize,
+            'SequelizeValidationError': handleSequelize,
             'JsonWebTokenError': handleJWTError,
-            'TokenExpiredError': handleTokenExpiredError
+            'TokenExpiredError': handleTokenExpiredError,
         }
 
         if (errObj[err.name]) {

@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const conn = require('../config/db.config')
 const schedule = require('node-schedule');
 const { blockJob } = require('../utils/schedule');
-const { Created } = require('../core/success.reponse');
+const { Created, OK, NoContent } = require('../core/success.reponse');
 const OfferServices = require('../services/offer.services');
 
 class OfferController {
@@ -52,6 +52,14 @@ class OfferController {
             .catch((err => console.error(err)));
     }
 
+    async getByJob(req, res, next) {
+        return OK.create({
+            message: "success",
+            metadata: await OfferServices.getByJob({ jobId: req.params.jobId, userId: req.user.id })
+        }
+        ).send(res)
+    }
+
     async create(req, res, next) {
         return Created.create({
             metadata: await OfferServices.create({
@@ -85,11 +93,13 @@ class OfferController {
             .catch((err) => console.log(err));
     }
 
-    delete(req, res, next) {
-        const id = req.params.id;
-        conn.promise().query(`DELETE FROM offer WHERE id='${id}'`)
-            .then(() => res.json({ message: 'Đã xóa chào giá.' }))
-            .catch((err) => console.log(err));
+    async delete(req, res, next) {
+        await OfferServices.delete({
+            offerId: req.params.id,
+            userId: req.user.id
+        })
+
+        return NoContent.create().send(res)
     }
 }
 

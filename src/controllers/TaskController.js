@@ -1,5 +1,7 @@
 const crypto = require('crypto');
-const conn = require('../config/db.config')
+const conn = require('../config/db.config');
+const { OK, Created, NoContent } = require('../core/success.reponse');
+const TaskServices = require('../services/task.services');
 
 class TaskController {
     getAllTasks(req, res) {
@@ -9,19 +11,20 @@ class TaskController {
             .catch((err => console.error(err)));
     }
 
-    getContractTasks(req, res) {
-        const contractId = req.params.contractId;
+    async getByContractId(req, res) {
+        const tasks = await TaskServices.getByContractId({ contractId: req.params.contractId })
 
-        const sql = `SELECT * FROM task WHERE contractId='${contractId}'`;
-        conn.promise().query(sql)
-            .then(([rows, fields]) => res.json(rows))
-            .catch((err => console.error(err)));
+        return OK.create({
+            message: "success",
+            metadata: {
+                length: tasks.length,
+                data: tasks
+            }
+        }).send(res);
     }
 
     getDocuments(req, res) {
         const taskId = req.query.taskId;
-
-        console.log(taskId);
 
         const sql = `SELECT * FROM document WHERE taskId='${taskId}'`;
         conn.promise().query(sql)
@@ -30,16 +33,15 @@ class TaskController {
 
     }
 
-    createTask(req, res) {
-        const { name, description, contractId, dateStart, dateEnd } = req.body;
-        const id = crypto.randomUUID();
-
-        const sql = "INSERT INTO task (id, name, description, dateStart, dateEnd, contractId) VALUES(?,?,?,?,?,?);";
-        conn.promise().query(sql, [id, name, description, new Date(dateStart), new Date(dateEnd), contractId])
-            .then(() => {
-                res.json({ status: 'success', message: 'Nhiệm vụ mới được tạo!', name });
+    async create(req, res) {
+        return Created.create({
+            message: "Task created successfully!",
+            metadata: await TaskServices.create({
+                taskData: req.body,
+                contractId: req.body.contractId,
+                userId: req.user.id
             })
-            .catch(err => console.error(err));
+        }).send(res);
     }
 
     uploadFile(req, res) {
@@ -57,22 +59,22 @@ class TaskController {
             .catch(err => console.error(err));
     }
 
-    updateTask(req, res) {
-        const id = req.params.id;
-        const { name = null, description = null, dateStart = null, dateEnd = null, status = null } = req.body;
-
-        const sql = `UPDATE task SET name = IFNULL(?, name), description = IFNULL(?, description), dateStart = IFNULL(?, dateStart), dateEnd = IFNULL(?, dateEnd), status = IFNULL(?, status) WHERE id='${id}';`
-        conn.promise().query(sql, [name, description, dateStart, dateEnd, status])
-            .then(() => res.json({ message: 'Thay đổi task thành công' }))
-            .catch((err) => console.log(err));
+    async update(req, res) {
+        return OK.create({
+            message: 'Update task successfully!',
+            metadata: await TaskServices.update({
+                taskId: req.params.id,
+                taskData: req.body
+            })
+        }).send(res);
     }
 
-
-    deleteTask(req, res) {
-        const id = req.params.id;
-        conn.promise().query(`DELETE FROM task WHERE id='${id}';`)
-            .then(() => res.json({ message: 'Xóa nhiệm vụ thành công' }))
-            .catch((err) => console.log(err));
+    async delete(req, res) {
+        await TaskServices.delete({
+            taskId: req.params.id,
+            userId: req.user.id
+        });
+        return NoContent.create().send(res);
     }
 }
 

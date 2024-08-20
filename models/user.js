@@ -40,6 +40,11 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'lastUserModified',
         constraints: false,
       });
+
+      this.hasMany(models.Task, {
+        foreignKey: 'creatorId',
+        constraints: false,
+      });
     }
 
     static async comparePassword(password, hashedPassword) {

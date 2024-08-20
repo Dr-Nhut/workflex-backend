@@ -28,6 +28,11 @@ module.exports = (sequelize, DataTypes) => {
                 foreignKey: 'offerId',
                 constraints: false,
             })
+
+            this.hasMany(models.Task, {
+                foreignKey: 'contractId',
+                constraints: false,
+            })
         }
     }
 
@@ -48,14 +53,14 @@ module.exports = (sequelize, DataTypes) => {
             },
             dateEnd: {
                 type: DataTypes.DATE,
-                values: {
+                validate: {
                     isAfter: new Date(this.dateStart).toString(),
                 },
                 allowNull: false,
             },
             value: {
                 type: DataTypes.INTEGER,
-                values: {
+                validate: {
                     min: 1000,
                 },
                 allowNull: false,

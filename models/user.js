@@ -7,11 +7,6 @@ const crypto = require('crypto');
 
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
     static associate(models) {
       this.belongsToMany(models.Category, { through: 'UserCategories' });
       this.belongsToMany(models.Skill, { through: 'UserSkills' });
@@ -43,6 +38,16 @@ module.exports = (sequelize, DataTypes) => {
 
       this.hasMany(models.Task, {
         foreignKey: 'creatorId',
+        constraints: false,
+      });
+
+      this.hasMany(models.Feedback, {
+        foreignKey: 'senderId',
+        constraints: false,
+      });
+
+      this.hasMany(models.Feedback, {
+        foreignKey: 'receiverId',
         constraints: false,
       });
     }

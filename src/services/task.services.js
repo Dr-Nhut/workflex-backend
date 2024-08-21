@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const { Op, where } = require("sequelize");
+const { Op } = require("sequelize");
 const { Task, Contract } = require("../../models");
 const { BadRequestError, NotFoundError } = require("../core/error.response");
 

@@ -13,6 +13,7 @@ const handleSequelize = (message) => {
 }
 
 module.exports = (err, req, res, next) => {
+    console.log(err);
     err.statusCode = err.status || 500;
     err.status = `${err.status}`.startsWith('4') ? 'fail' : 'error';
 

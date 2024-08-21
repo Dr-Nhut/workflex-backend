@@ -25,6 +25,11 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'jobId',
         constraints: false,
       })
+
+      this.hasMany(models.Feedback, {
+        foreignKey: 'jobId',
+        constraints: false,
+      })
     }
   }
 

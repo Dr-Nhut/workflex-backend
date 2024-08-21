@@ -8,7 +8,7 @@ const adminRouter = require("./admin.route");
 const stripeRouter = require("./stripe.route");
 const taskRouter = require("./task.route");
 const paymentRouter = require("./payment.route");
-const evaluationRouter = require("./evaluation.route");
+const feedbackRouter = require("./feedback.route");
 const notificationRouter = require("./notification.route");
 const userRouter = require("./user.route");
 const recommendationRouter = require("./recommendation.router");
@@ -30,7 +30,7 @@ function route(app) {
     app.use('/api/admin', adminRouter);
     app.use('/api/stripe', stripeRouter);
     app.use('/api/payment', paymentRouter);
-    app.use('/api/evaluation', evaluationRouter);
+    app.use('/api/feedback', feedbackRouter);
     app.use('/api/notification', notificationRouter);
     app.use('/api/recommendation', recommendationRouter);
 }

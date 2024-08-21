@@ -1,6 +1,4 @@
 const conn = require('../config/db.config')
-const { Skill } = require('../../models');
-const sequelizeErrorHandler = require("../utils/sequelizeErrorHandler");
 const SkillServices = require('../services/skill.services');
 const { OK, NoContent } = require('../core/success.reponse');
 

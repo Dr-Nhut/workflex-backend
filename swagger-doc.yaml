@@ -1,0 +1,150 @@
+openapi: 3.0.3
+info:
+  title: Work flex - OpenAPI 3.0
+  description: |-
+
+  contact:
+    email: lmnhut1612@gmail.com
+  version: 1.0.1
+# externalDocs:
+#   description: Find out more about Swagger
+#   url: http://swagger.io
+servers:
+  - url: http://localhost:3000/api
+tags:
+  - name: category
+    description: Everything about your Categories
+  - name: skill
+    description: Everything about your Skills
+  - name: user
+    description: Operations about user
+paths:
+  /category:
+    put:
+      tags:
+        - category
+      summary: Cập nhật lĩnh vực đang tồn tại.
+      description: Cập nhật lĩnh vực bằng id
+      operationId: updateCategory
+      parameters:
+        - name: id
+          in: query
+          description: id của lĩnh vực cần cập nhật
+          required: true
+          schema:
+            type: string
+            format: uuid
+            default: 2c8ffa97-cfce-4daa-b50c-feff239095fe
+      requestBody:
+        description: Update an existent cateogry in the store
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  type: string
+                  default: Trí tuệ nhân tạo - AI
+        required: true
+      responses:
+        "201":
+          description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: NotFound
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      tags:
+        - category
+      summary: Thêm mới lĩnh vực
+      description: Thêm mới lĩnh vực vào database
+      operationId: addCategory
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  type: string
+                  example: Quản lý dự án
+          application/x-www-form-urlencoded:
+            schema:
+              properties:
+                name:
+                  type: string
+                  example: Quản lý dự án
+        required: true
+      responses:
+        "200":
+          description: Thêm mới thành công
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "Phát triển web"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      xml:
+        name: category
+    SuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Thông báo về kết quả của operation
+        status:
+          type: integer
+          example: 2xx
+          description: Mã trạng thái HTTP
+        metadata:
+          $ref: "#/components/schemas/Category"
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Trạng thái của response (thường là "fail")
+        message:
+          type: string
+          description: Thông báo lỗi chi tiết
+
+  # requestBodies:
+  securitySchemes:
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header

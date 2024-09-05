@@ -13,6 +13,22 @@ const globalErorHandler = require("./src/controllers/errorController");
 const { AppError, BadRequestError } = require('./src/core/error.response');
 const { default: helmet } = require('helmet');
 const compression = require('compression');
+const swaggerUi = require('swagger-ui-express');
+const swaggerJsdoc = require('swagger-jsdoc');
+
+const options = {
+    definition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'Work flex API docs',
+            version: '1.0.0',
+        },
+    },
+    apis: ['./swagger-doc.yaml'], // files containing annotations as above
+};
+
+const openapiSpecification = swaggerJsdoc(options);
+
 
 const port = 3000;
 const app = express()
@@ -20,7 +36,7 @@ const app = express()
 app.use(cookieParser());
 app.use(cors({
     credentials: true,
-    origin: 'http://localhost:5173'
+    origin: ['http://localhost:5173', 'http://localhost:3000']
 }));
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -47,6 +63,8 @@ if (!process.env.DATABASE_URL) {
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
     dialectOptions: { ssl: { require: true } }
 });
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openapiSpecification));
 
 
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), StripeController.webhook)

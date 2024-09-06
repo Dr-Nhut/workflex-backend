@@ -10,6 +10,7 @@ router.get('/documents', TaskController.getDocuments)
 router.get('/:contractId', authentication, catchAsyncError(TaskController.getByContractId));
 
 router.post('/:id/upload-file', upload.single('image'), TaskController.uploadFile);
+
 router.post('/', authentication, catchAsyncError(TaskController.create))
 
 router.patch('/:id', authentication, catchAsyncError(TaskController.update))

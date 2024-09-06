@@ -22,9 +22,15 @@ const options = {
         info: {
             title: 'Work flex API docs',
             version: '1.0.0',
+            contact: { email: 'lmnhut1612@gmail.com' }
         },
+        servers: [
+            {
+                url: 'http://localhost:3000/api',
+            },
+        ],
     },
-    apis: ['./swagger-doc.yaml'], // files containing annotations as above
+    apis: ['./swagger-doc.yaml'],
 };
 
 const openapiSpecification = swaggerJsdoc(options);

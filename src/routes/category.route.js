@@ -8,7 +8,7 @@ const categoryRouter = express.Router();
 
 categoryRouter
     .route("/")
-    .get(AuthController.protect, catchAsyncError(CategoryController.getAll))
+    .get(catchAsyncError(CategoryController.getAll))
     .post(catchAsyncError(CategoryController.create));
 
 categoryRouter

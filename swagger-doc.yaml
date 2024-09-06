@@ -1,14 +1,9 @@
 openapi: 3.0.3
 info:
   title: Work flex - OpenAPI 3.0
-  description: |-
-
   contact:
     email: lmnhut1612@gmail.com
   version: 1.0.1
-# externalDocs:
-#   description: Find out more about Swagger
-#   url: http://swagger.io
 servers:
   - url: http://localhost:3000/api
 tags:
@@ -20,46 +15,34 @@ tags:
     description: Operations about user
 paths:
   /category:
-    put:
+    get:
       tags:
         - category
-      summary: Cập nhật lĩnh vực đang tồn tại.
-      description: Cập nhật lĩnh vực bằng id
-      operationId: updateCategory
-      parameters:
-        - name: id
-          in: query
-          description: id của lĩnh vực cần cập nhật
-          required: true
-          schema:
-            type: string
-            format: uuid
-            default: 2c8ffa97-cfce-4daa-b50c-feff239095fe
-      requestBody:
-        description: Update an existent cateogry in the store
-        content:
-          application/json:
-            schema:
-              properties:
-                name:
-                  type: string
-                  default: Trí tuệ nhân tạo - AI
-        required: true
+      summary: Lấy thông tin tất cả lĩnh vực
+      description: Lấy thông tin tất cả các lĩnh vực dành cho Admin
+      operationId: getAllCategories
       responses:
-        "201":
-          description: Cập nhật thành công
+        "200":
+          description: Thành công
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SuccessResponse"
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          length:
+                            type: integer
+                            example: 1
+                          categories:
+                            type: array
+                            items:
+                              $ref: "#/components/schemas/Category"
         "400":
           description: BadRequest
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
-          description: NotFound
           content:
             application/json:
               schema:
@@ -101,6 +84,56 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /category/{id}:
+    put:
+      tags:
+        - category
+      summary: Cập nhật lĩnh vực đang tồn tại.
+      description: Cập nhật lĩnh vực bằng id
+      operationId: updateCategory
+      parameters:
+        - name: id
+          in: path
+          description: id của lĩnh vực cần cập nhật
+          required: true
+          schema:
+            type: string
+            format: uuid
+            default: 2c8ffa97-cfce-4daa-b50c-feff239095fe
+      requestBody:
+        description: Update an existent cateogry in the store
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  type: string
+                  default: Trí tuệ nhân tạo - AI
+        required: true
+      responses:
+        "201":
+          description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      metadata:
+                        $ref: "#/components/schemas/Category"
+        "400":
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: NotFound
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     Category:
@@ -130,8 +163,6 @@ components:
           type: integer
           example: 2xx
           description: Mã trạng thái HTTP
-        metadata:
-          $ref: "#/components/schemas/Category"
     ErrorResponse:
       type: object
       properties:

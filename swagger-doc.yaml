@@ -14,6 +14,50 @@ tags:
   - name: user
     description: Operations about user
 paths:
+  /auth/login:
+    post:
+      tags:
+        - auth
+      summary: Cho phép user đăng nhập hệ thống
+      description: "Đăng nhập với tài khoản và mật khẩu vào hệ thống"
+      operationId: loginUser
+      requestBody:
+        description: Update an existent user in the store
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthLogin"
+      responses:
+        "200":
+          description: Đăng nhập thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          accessToken:
+                            type: string
+                            example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNmZGU4NThiLTk4MmMtNDM3Yy1hY2YyLTI3NGE3NzMwNmEwOSIsImVtYWlsIjoicXV5bGhAZ21haWwuY29tIiwiaWF0IjoxNzI2MDEzMzY4LCJleHAiOjE3MjYxODYxNjh9.hiA5Kpqb3SSCNe770Lh3263xE6CBW2eaLJxZx3wGPDk
+                          refreshToken:
+                            type: string
+                            example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNmZGU4NThiLTk4MmMtNDM3Yy1hY2YyLTI3NGE3NzMwNmEwOSIsImVtYWlsIjoicXV5bGhAZ21haWwuY29tIiwiaWF0IjoxNzI2MDEzMzY4LCJleHAiOjE3MjYxODYxNjh9.sQelN-zVihKwJvwy3pVyggl5pBAD_KpGmxSgbYT7_EE
+        "400":
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /category:
     get:
       tags:
@@ -52,7 +96,17 @@ paths:
         - category
       summary: Thêm mới lĩnh vực
       description: Thêm mới lĩnh vực vào database
+      security:
+        - bearerAuth: []
       operationId: addCategory
+      parameters:
+        - in: header
+          name: x-client-id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Client ID for authentication
       requestBody:
         content:
           application/json:
@@ -136,6 +190,15 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
+    AuthLogin:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          example: "nhut@dev"
     Category:
       type: object
       properties:
@@ -177,5 +240,9 @@ components:
   securitySchemes:
     api_key:
       type: apiKey
-      name: api_key
       in: header
+      name: x-api-key
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

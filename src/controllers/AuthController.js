@@ -94,7 +94,7 @@ class AuthController {
         return OK.create(await register(req.body)).send(res)
     }
 
-    async login(req, res, next) {
+    async login(req, res) {
         return OK.create(await login(req.body)).send(res);
     }
 

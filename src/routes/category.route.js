@@ -3,13 +3,14 @@ const CategoryController = require('../controllers/CategoryController');
 const AuthController = require('../controllers/AuthController');
 const validateUUID = require('../middlewares/validateUUIDv4');
 const { catchAsyncError } = require('../utils/catchAsyncError');
+const { authentication } = require('../utils/auth/authUtils');
 const categoryRouter = express.Router();
 
 
 categoryRouter
     .route("/")
     .get(catchAsyncError(CategoryController.getAll))
-    .post(catchAsyncError(CategoryController.create));
+    .post(authentication, catchAsyncError(CategoryController.create));
 
 categoryRouter
     .route("/:id")

@@ -34,6 +34,12 @@ class NotFoundError extends ErrorResponse {
     }
 }
 
+class UnprocessableEntityError extends ErrorResponse {
+    constructor(message = Reason.UNPROCESSABLE_ENTITY, status = StatusCode.UNPROCESSABLE_ENTITY) {
+        super(message, status);
+    }
+}
+
 class AppError extends Error {
     constructor(message, statusCode) {
         super(message)
@@ -51,5 +57,6 @@ module.exports = {
     UnauthorizedError,
     ForbiddenRequestError,
     NotFoundError,
+    UnprocessableEntityError,
     AppError
 };

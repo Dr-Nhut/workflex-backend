@@ -12,6 +12,8 @@ const feedbackRouter = require("./feedback.route");
 const notificationRouter = require("./notification.route");
 const userRouter = require("./user.route");
 const recommendationRouter = require("./recommendation.router");
+const permissionRouter = require("./permission.router");
+const roleRouter = require("./role.router");
 const apiKey = require("../middlewares/apiKey");
 const checkPemission = require("../middlewares/checkPermission");
 const { catchAsyncError } = require('../utils/catchAsyncError');
@@ -33,6 +35,8 @@ function route(app) {
     app.use('/api/feedback', feedbackRouter);
     app.use('/api/notification', notificationRouter);
     app.use('/api/recommendation', recommendationRouter);
+    app.use('/api/permission', permissionRouter);
+    app.use('/api/role', roleRouter);
 }
 
 module.exports = route;

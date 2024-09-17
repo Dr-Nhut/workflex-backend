@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 require('dotenv/config');
 const { catchAsyncError } = require('../catchAsyncError');
+const { Permission, Role, User } = require('../../../models');
 const { UnauthorizedError, NotFoundError } = require('../../core/error.response');
 
 //services
@@ -77,4 +78,29 @@ const authRefreshToken = catchAsyncError(async (req, res, next) => {
     }
 })
 
-module.exports = { createTokenPair, authentication, authRefreshToken }
+const canAccess = (permission) => catchAsyncError(async (req, res, next) => {
+    const access = await Permission.findOne({
+        where: { title: permission },
+        include: [
+            {
+                attributes: ['id'],
+                model: Role,
+                through: { attributes: [] }
+            }
+        ],
+    });
+
+    const user = await User.findOne({
+        where: { id: req.user.id },
+    })
+
+    for (const item of access.Roles) {
+        if (user.roleId === item.id) {
+            return next();
+        }
+    }
+
+    throw new UnauthorizedError('You do not have the authorization to access this');
+});
+
+module.exports = { createTokenPair, authentication, authRefreshToken, canAccess }

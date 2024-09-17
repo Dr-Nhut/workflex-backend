@@ -8,6 +8,9 @@ const crypto = require('crypto');
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     static associate(models) {
+      this.belongsTo(models.Role, {
+        foreignKey: 'roleId',
+      });
       this.belongsToMany(models.Category, { through: 'UserCategories' });
       this.belongsToMany(models.Skill, { through: 'UserSkills' });
 
@@ -141,19 +144,6 @@ module.exports = (sequelize, DataTypes) => {
     },
     address: DataTypes.STRING,
     bio: DataTypes.STRING,
-    role: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notNull: {
-          msg: "Bạn chưa chọn loại tài khoản!!!"
-        },
-        isIn: {
-          args: [['adm', 'emp', 'fre']],
-          msg: "Loại tài khoản không hợp lệ"
-        },
-      }
-    },
     sex: DataTypes.BOOLEAN,
     bankAccount: DataTypes.STRING,
     dayOfBirth: DataTypes.DATE,

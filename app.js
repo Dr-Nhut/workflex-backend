@@ -42,7 +42,7 @@ const app = express()
 app.use(cookieParser());
 app.use(cors({
     credentials: true,
-    origin: ['http://localhost:5173', 'http://localhost:3000']
+    origin: ['http://localhost:5173', 'http://localhost:3000', 'http://192.168.2.139:8081']
 }));
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }))

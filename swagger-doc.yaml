@@ -188,6 +188,134 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /permission:
+    post:
+      tags:
+        - permission
+      summary: Thêm mới phân quyền
+      description: Thêm phân quyền mới vào database
+      security:
+        - bearerAuth: []
+      operationId: addPermission
+      parameters:
+        - in: header
+          name: x-client-id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Client ID for authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                title:
+                  type: string
+                  example: add-permission
+                description:
+                  type: string
+                  example: Cho phép thêm phân quyền cho hệ thống
+        required: true
+      responses:
+        "201":
+          description: Thêm mới thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          permission:
+                            type: object
+                            properties:
+                              title:
+                                type: string
+                                example: add-permission
+                              description:
+                                type: string
+                                example: Cho phép thêm phân quyền cho hệ thống
+        "400":
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: UnprocessableEntity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /role/add-permission:
+    post:
+      tags:
+        - role
+      summary: Thêm mới quyền cho vai trò
+      description: Thêm phân quyền mới cho role trên hệ thống
+      security:
+        - bearerAuth: []
+      operationId: roleAddPermission
+      parameters:
+        - in: header
+          name: x-client-id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Client ID for authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                roleId:
+                  type: string
+                  format: uuid
+                  example: 72d2ce71-b87e-4976-8cb6-b47f2afa5fce
+                permissionId:
+                  type: string
+                  format: uuid
+                  example: 9a3d6ee2-945f-4b2a-b85f-eb07f45040be
+        required: true
+      responses:
+        "200":
+          description: Thêm quyền cho vai trò thành công!
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          role:
+                            type: object
+                            properties:
+                              title:
+                                type: string
+                                example: add-permission
+                              description:
+                                type: string
+                                example: Cho phép thêm phân quyền cho hệ thống
+        "400":
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: UnprocessableEntity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     AuthLogin:

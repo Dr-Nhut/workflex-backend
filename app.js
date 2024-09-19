@@ -5,7 +5,6 @@ const cors = require('cors');
 const schedule = require('node-schedule');
 const route = require('./src/routes');
 const cookieParser = require('cookie-parser');
-const StripeController = require('./src/controllers/StripeController');
 const { blockBidding, blockJob } = require('./src/utils/schedule');
 const { Sequelize, DataTypes } = require("sequelize");
 const { config } = require("dotenv");
@@ -72,9 +71,6 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openapiSpecification));
 
-
-app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), StripeController.webhook)
-
 route(app);
 
 app.all('*', (req, res, next) => {
@@ -84,9 +80,9 @@ app.all('*', (req, res, next) => {
 app.use(globalErorHandler);
 
 const server = app.listen(port, () => {
-    console.log(`Server listening at http://localhost:${port}`);
+    console.log(`Server running at http://localhost:${port}`);
 
-    const sql = "SELECT * FROM schedule WHERE date > CURRENT_DATE;"
+    // const sql = "SELECT * FROM schedule WHERE date > CURRENT_DATE;"
 
     // conn.promise().query(sql)
     //     .then(([rows, fields]) => {

@@ -5,7 +5,6 @@ const jobRouter = require("./job.route");
 const offerRoute = require("./offer.route");
 const contractRoute = require("./contract.route");
 const adminRouter = require("./admin.route");
-const stripeRouter = require("./stripe.route");
 const taskRouter = require("./task.route");
 const paymentRouter = require("./payment.route");
 const feedbackRouter = require("./feedback.route");
@@ -30,7 +29,6 @@ function route(app) {
     app.use('/api/contract', contractRoute);
     app.use('/api/task', taskRouter);
     app.use('/api/admin', adminRouter);
-    app.use('/api/stripe', stripeRouter);
     app.use('/api/payment', paymentRouter);
     app.use('/api/feedback', feedbackRouter);
     app.use('/api/notification', notificationRouter);

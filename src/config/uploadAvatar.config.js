@@ -6,7 +6,8 @@ const storage = multer.diskStorage({
         res(null, "public/uploads/avatar");
     },
     filename: function (req, file, res) {
-        res(null, file.originalname);
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        res(null, file.originalname + '-' + uniqueSuffix);
     },
 });
 const uploadAvatar = multer({ storage: storage });

@@ -46,7 +46,7 @@ const authentication = catchAsyncError(async (req, res, next) => {
 
     try {
         const decode = jwt.verify(accessToken, keyStore.publicKey);
-        console.log(decode);
+
         if (decode.id !== userId) throw new UnauthorizedError('Invalid user ID');
         req.user = decode;
         req.keyStore = keyStore;
@@ -64,7 +64,7 @@ const authRefreshToken = catchAsyncError(async (req, res, next) => {
     if (!keyStore) throw new NotFoundError('No key store found');
 
     let refreshToken = req.headers[HEADER.REFRESHTOKEN];
-    if (!refreshToken) throw new UnauthorizedError('Invalid token');
+    if (!refreshToken) throw new UnauthorizedError('Invalid refresh token');
 
     try {
         const decode = jwt.verify(refreshToken, keyStore.privateKey);

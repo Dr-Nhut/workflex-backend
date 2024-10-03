@@ -59,7 +59,6 @@ app.use(compression());
 
 app.use(express.static('public'))
 
-
 //connect database
 config();
 if (!process.env.DATABASE_URL) {

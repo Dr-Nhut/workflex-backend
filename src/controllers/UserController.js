@@ -1,5 +1,7 @@
 const crypto = require('crypto');
 const conn = require('../config/db.config');
+const { OK } = require('../core/success.reponse');
+const UserServices = require('../services/user.services');
 
 
 class UserController {
@@ -41,17 +43,12 @@ class UserController {
             .catch((err) => console.error(err));
     }
 
-    updateAvatar(req, res) {
-        const userId = req.userId;
-        const avatar = req.file.filename;
-
-        const sql = `UPDATE user SET avatar='uploads/avatar/${avatar}' WHERE id='${userId}'`
-
-        conn.promise().query(sql)
-            .then(() => {
-                res.json({ message: 'Đổi ảnh đại diện thành công', avatar: `uploads/avatar/${avatar}` })
-            })
-            .catch((err) => console.error(err));
+    async updateAvatar(req, res) {
+        console.log(req.file)
+        return OK.create({
+            message: 'Cập nhật ảnh đại diện thành công!',
+            metadata: await UserServices.updateAvatar({ userId: req.user.id, path: req.file.path })
+        }).send(res);
     }
 
     updateInfor(req, res) {

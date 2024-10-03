@@ -58,6 +58,59 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /user/change-avatar:
+    patch:
+      tags:
+        - user
+      summary: Cho phép user thay đổi ảnh đại diện
+      operationId: changeAvatar
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: header
+          name: x-client-id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Client ID for authentication
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Cập nhật ảnh đại diện thành công!
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          avatarUrl:
+                            type: string
+                            example: https://res.cloudinary.com/workflex/image/upload/v1726837084/avatar/cfde858b-982c-437c-acf2-274a77306a09/avatar.jpg
+        "400":
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /category:
     get:
       tags:

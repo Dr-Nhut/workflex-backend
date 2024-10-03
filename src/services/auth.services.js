@@ -1,10 +1,10 @@
 const crypto = require('crypto');
-const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 require('dotenv/config');
-const { User, sequelize } = require('../../models');
+const { User } = require('../../models');
 const KeyTokenServices = require('./keyToken.services');
 const { createTokenPair } = require('../utils/auth/authUtils');
-const { BadRequestError, UnauthorizedError, ForbiddenRequestError } = require('../core/error.response');
+const { BadRequestError, UnauthorizedError, ForbiddenRequestError, NotFoundError } = require('../core/error.response');
 const { findUserByEmail } = require('./user.services');
 
 class AuthServies {
@@ -39,14 +39,9 @@ class AuthServies {
                 }
             }
         }
-
-        return {
-            code: '200',
-            metadata: null
-        }
     }
 
-    static login = async ({ email, password, refreshToken = null }) => {
+    static login = async ({ email, password }) => {
         if (!email || !password) {
             throw new BadRequestError('Tài khoản hoặc mật khẩu bỏ trống!');
         }
@@ -66,7 +61,7 @@ class AuthServies {
             const publicKeyString = await KeyTokenServices.createKeyToken({ userId: user.id, publicKey, privateKey, refreshToken: tokens.refreshToken });
 
             if (!publicKeyString) {
-                throw new BadRequestError('Public key string error');
+                throw new BadRequestError('Đã xảy ra lỗi khi đăng nhập');
             }
 
             return {
@@ -96,14 +91,14 @@ class AuthServies {
 
         const foundUser = await findUserByEmail({ email });
 
-        if (!foundUser) throw new UnauthorizedError("User not existed");
+        if (!foundUser) throw new UnauthorizedError("Tài khoản không tồn tại");
 
         const tokens = await createTokenPair({ id, email }, keyStore.publicKey, keyStore.privateKey);
 
         //update keyToken
         await KeyTokenServices.update({
             updateFields: {
-                refreshToken,
+                refreshToken: tokens.refreshToken,
                 refreshTokenUsed: [...keyStore.refreshTokenUsed, refreshToken]
             },
             filters: { id: keyStore.id }
@@ -115,6 +110,20 @@ class AuthServies {
                 tokens,
             }
         }
+    }
+
+    static verifyEmail(email, token) {
+        bcrypt.compare(email, token, (err, result) => {
+            if (err) {
+                throw new BadRequestError('Đã xảy ra lỗi khi xác thực email');
+            }
+            if (result === true) {
+                return { emailVerifiedAt: new Date().toLocaleString() }
+
+            }
+
+            throw new NotFoundError('Email không hợp lệ')
+        })
     }
 }
 

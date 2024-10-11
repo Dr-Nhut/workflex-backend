@@ -9,6 +9,7 @@ const { catchAsyncError } = require('../utils/catchAsyncError');
 router.get("/all", UserController.getAllAcccount);
 router.get("/allFreelancers", UserController.getAllFreelancers);
 router.get("/allFreelancersByCategory", UserController.getAllFreelancersByCategory);
+router.get("/me", authentication, catchAsyncError(UserController.getMyInfor));
 router.get("/freelancer", UserController.getFreelancerInfor);
 router.get("/:id", UserController.getInfor);
 router.patch("/change-avatar", authentication, uploadAvatar.single('avatar'), catchAsyncError(UserController.updateAvatar));

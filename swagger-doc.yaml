@@ -19,22 +19,22 @@ paths:
       tags:
         - auth
       summary: Cho phép user đăng nhập hệ thống
-      description: "Đăng nhập với tài khoản và mật khẩu vào hệ thống"
+      description: 'Đăng nhập với tài khoản và mật khẩu vào hệ thống'
       operationId: loginUser
       requestBody:
         description: Update an existent user in the store
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AuthLogin"
+              $ref: '#/components/schemas/AuthLogin'
       responses:
-        "200":
+        '200':
           description: Đăng nhập thành công
           content:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/SuccessResponse"
+                  - $ref: '#/components/schemas/SuccessResponse'
                   - type: object
                     properties:
                       metadata:
@@ -46,18 +46,44 @@ paths:
                           refreshToken:
                             type: string
                             example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNmZGU4NThiLTk4MmMtNDM3Yy1hY2YyLTI3NGE3NzMwNmEwOSIsImVtYWlsIjoicXV5bGhAZ21haWwuY29tIiwiaWF0IjoxNzI2MDEzMzY4LCJleHAiOjE3MjYxODYxNjh9.sQelN-zVihKwJvwy3pVyggl5pBAD_KpGmxSgbYT7_EE
-        "400":
+        '400':
           description: BadRequest
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/logout:
+    post:
+      tags:
+        - auth
+      summary: Cho phép user đăng xuất tài khoản
+      description: 'Hủy bỏ thông tin đăng nhập của tài khoản trên hệ thống'
+      operationId: logoutUser
+      responses:
+        '200':
+          description: Đăng xuất thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /user/change-avatar:
     patch:
       tags:
@@ -84,13 +110,13 @@ paths:
                   type: string
                   format: binary
       responses:
-        "200":
+        '200':
           description: Cập nhật ảnh đại diện thành công!
           content:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/SuccessResponse"
+                  - $ref: '#/components/schemas/SuccessResponse'
                   - type: object
                     properties:
                       metadata:
@@ -99,18 +125,54 @@ paths:
                           avatarUrl:
                             type: string
                             example: https://res.cloudinary.com/workflex/image/upload/v1726837084/avatar/cfde858b-982c-437c-acf2-274a77306a09/avatar.jpg
-        "400":
+        '400':
           description: BadRequest
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
+  /job:
+    post:
+      tags:
+        - job
+      summary: Thêm mới việc làm
+      description: Cho phép nhà tuyển dụng thêm mới việc làm
+      security:
+        - bearerAuth: []
+      operationId: addJob
+      parameters:
+        - in: header
+          name: x-client-id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Client ID for authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Job'
+        required: true
+      responses:
+        '200':
+          description: Thêm mới thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /category:
     get:
       tags:
@@ -119,13 +181,13 @@ paths:
       description: Lấy thông tin tất cả các lĩnh vực dành cho Admin
       operationId: getAllCategories
       responses:
-        "200":
+        '200':
           description: Thành công
           content:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/SuccessResponse"
+                  - $ref: '#/components/schemas/SuccessResponse'
                   - type: object
                     properties:
                       metadata:
@@ -137,13 +199,13 @@ paths:
                           categories:
                             type: array
                             items:
-                              $ref: "#/components/schemas/Category"
-        "400":
+                              $ref: '#/components/schemas/Category'
+        '400':
           description: BadRequest
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
     post:
       tags:
         - category
@@ -176,21 +238,21 @@ paths:
                   example: Quản lý dự án
         required: true
       responses:
-        "200":
+        '200':
           description: Thêm mới thành công
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SuccessResponse"
+                $ref: '#/components/schemas/SuccessResponse'
             application/xml:
               schema:
-                $ref: "#/components/schemas/SuccessResponse"
-        "400":
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
           description: BadRequest
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /category/{id}:
     put:
       tags:
@@ -218,29 +280,29 @@ paths:
                   default: Trí tuệ nhân tạo - AI
         required: true
       responses:
-        "201":
+        '201':
           description: Cập nhật thành công
           content:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/SuccessResponse"
+                  - $ref: '#/components/schemas/SuccessResponse'
                   - type: object
                     properties:
                       metadata:
-                        $ref: "#/components/schemas/Category"
-        "400":
+                        $ref: '#/components/schemas/Category'
+        '400':
           description: BadRequest
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: NotFound
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /permission:
     post:
       tags:
@@ -271,13 +333,13 @@ paths:
                   example: Cho phép thêm phân quyền cho hệ thống
         required: true
       responses:
-        "201":
+        '201':
           description: Thêm mới thành công
           content:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/SuccessResponse"
+                  - $ref: '#/components/schemas/SuccessResponse'
                   - type: object
                     properties:
                       metadata:
@@ -292,18 +354,18 @@ paths:
                               description:
                                 type: string
                                 example: Cho phép thêm phân quyền cho hệ thống
-        "400":
+        '400':
           description: BadRequest
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "422":
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
           description: UnprocessableEntity
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /role/add-permission:
     post:
       tags:
@@ -336,13 +398,13 @@ paths:
                   example: 9a3d6ee2-945f-4b2a-b85f-eb07f45040be
         required: true
       responses:
-        "200":
+        '200':
           description: Thêm quyền cho vai trò thành công!
           content:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/SuccessResponse"
+                  - $ref: '#/components/schemas/SuccessResponse'
                   - type: object
                     properties:
                       metadata:
@@ -357,18 +419,18 @@ paths:
                               description:
                                 type: string
                                 example: Cho phép thêm phân quyền cho hệ thống
-        "400":
+        '400':
           description: BadRequest
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "422":
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
           description: UnprocessableEntity
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
     AuthLogin:
@@ -379,7 +441,7 @@ components:
           format: email
         password:
           type: string
-          example: "nhut@dev"
+          example: 'nhut@dev'
     Category:
       type: object
       properties:
@@ -388,7 +450,7 @@ components:
           format: uuid
         name:
           type: string
-          example: "Phát triển web"
+          example: 'Phát triển web'
         createdAt:
           type: string
           format: date-time
@@ -397,6 +459,91 @@ components:
           format: date-time
       xml:
         name: category
+    Job:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          example: 'Tạo website để đăng truyện tự sáng tác'
+        description:
+          type: string
+          example: 'Tôi muốn tạo website đăng truyện tự sáng tác. Có chức năng thanh toán trực tuyến'
+        creatorId:
+          type: string
+          format: uuid
+          example: '8ae7d68b-f29c-44a6-8365-764255c703cd'
+        categoryId:
+          type: string
+          format: uuid
+          example: '2c8ffa97-cfce-4daa-b50c-feff239095fe'
+        skills:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobSkills'
+        minBudget:
+          type: number
+          example: 2000000
+        maxBudget:
+          type: number
+          example: 3000000
+        experience:
+          type: string
+          format: ENUM
+          example: '0'
+        dateStart:
+          type: string
+          format: date-time
+          example: '2024-10-05'
+        dateEnd:
+          type: string
+          format: date-time
+          example: '2024-10-10'
+        bidExpiration:
+          type: string
+          format: date-time
+          example: '2024-10-01'
+        reasonRefused:
+          type: string
+        status:
+          type: string
+          format: ENUM
+          example: '0'
+        type:
+          type: string
+          format: ENUM
+          example: 'Online'
+        completedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      xml:
+        name: job
+    JobSkills:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        JobId:
+          type: string
+          format: uuid
+        SkillId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
     SuccessResponse:
       type: object
       properties:

@@ -94,13 +94,15 @@ const canAccess = (permission) => catchAsyncError(async (req, res, next) => {
         where: { id: req.user.id },
     })
 
+
+
     for (const item of access.Roles) {
         if (user.roleId === item.id) {
             return next();
         }
     }
 
-    throw new UnauthorizedError('You do not have the authorization to access this');
+    throw new UnauthorizedError('Bạn không có quyền truy cập tài nguyên này');
 });
 
 module.exports = { createTokenPair, authentication, authRefreshToken, canAccess }

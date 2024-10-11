@@ -2,8 +2,14 @@ const { Permission } = require('../../models');
 const { UnprocessableEntityError } = require('../core/error.response');
 
 class PermissionServices {
+    static getAll = async () => {
+        return await Permission.findAll();
+    }
+
     static create = async ({ title = '', description }) => {
         const permission = await Permission.findOne({ where: { title } });
+
+
 
         if (permission) {
             throw new UnprocessableEntityError('Quyền đã tồn tại!')

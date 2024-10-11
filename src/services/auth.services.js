@@ -68,6 +68,7 @@ class AuthServies {
                 message: 'Đăng nhập thành công!',
                 metadata: {
                     tokens,
+                    id: user.id
                 }
             }
         }
@@ -112,18 +113,20 @@ class AuthServies {
         }
     }
 
-    static verifyEmail(email, token) {
-        bcrypt.compare(email, token, (err, result) => {
-            if (err) {
-                throw new BadRequestError('Đã xảy ra lỗi khi xác thực email');
-            }
-            if (result === true) {
+    static async verifyEmail(email, token) {
+        if (!email || !token) throw new BadRequestError('Mã xác thực không hợp lệ')
+
+        try {
+            const match = await bcrypt.compare(email, token);
+
+            if (match) {
                 return { emailVerifiedAt: new Date().toLocaleString() }
-
+            } else {
+                throw new NotFoundError('Email không hợp lệ')
             }
-
-            throw new NotFoundError('Email không hợp lệ')
-        })
+        } catch (err) {
+            throw new BadRequestError('Xác thực email không thành công')
+        }
     }
 }
 

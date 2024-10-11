@@ -5,6 +5,13 @@ const UserServices = require('../services/user.services');
 
 
 class UserController {
+    async getMyInfor(req, res) {
+        return OK.create({
+            message: "Thành công",
+            metadata: await UserServices.getMyInfor({ id: req.user.id })
+        }).send(res);
+    }
+
     getAllAcccount(req, res) {
         const ADMIN = 'adm'
         const sql = `SELECT id, fullname, avatar, email, role, status FROM user WHERE role != '${ADMIN}';`

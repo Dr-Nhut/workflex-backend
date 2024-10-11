@@ -14,17 +14,13 @@ class JobController {
             .catch(err => console.error(err));
     }
 
-    getEmployerJob(req, res, next) {
-        const { employerId, status, comparison } = req.query;
-
-        const sql = `SELECT job.id, job.name, job.description, job.maxBudget, job.bidDeadline, job.createAt, job.dateStart, job.duration, job.type, job.experience, job.status, job.completedAt,job.employerId, category.name as category, user.email, user.fullname, user.avatar FROM job LEFT JOIN category ON job.categoryId=category.id LEFT JOIN user ON job.employerId=user.id WHERE job.status${comparison}${status} AND job.employerId='${employerId}';`;
-
-
-        conn.promise().query(sql)
-            .then(([rows, fields]) => {
-                res.send(rows);
-            })
-            .catch(err => console.error(err));
+    async getEmployerJob(req, res) {
+        const jobs = await JobServices.getByEmployerId({ employerId: req.user.id, status: req.query.status });
+        return OK.create({
+            message: "Thành công",
+            result: jobs.length,
+            metadata: jobs
+        }).send(res);
     }
 
     getFreelancerJob(req, res) {
@@ -107,7 +103,7 @@ class JobController {
             .catch(err => console.error(err));
     }
 
-    async getAll(req, res, next) {
+    async getAll(req, res) {
         const jobs = await JobServices.getAll();
         return OK.create({
             message: "Success",
@@ -116,18 +112,17 @@ class JobController {
         }).send(res);
     }
 
-    async getById(req, res, next) {
+    async getById(req, res) {
         return OK.create({
             message: "Success",
             metadata: await JobServices.getById(req.params.id)
         }).send(res);
     }
 
-    async create(req, res, next) {
-
+    async create(req, res) {
         return Created.create({
-            message: 'Job created successfully!',
-            metadata: await JobServices.create(req.body, req.user.id)
+            message: 'Thêm mới việc làm thành công!',
+            metadata: await JobServices.create({ job: req.body, creatorId: req.user.id })
         }).send(res);
     }
 
@@ -145,9 +140,9 @@ class JobController {
             .catch((err) => console.log(err));
     }
 
-    async update(req, res, next) {
+    async update(req, res) {
         return OK.create({
-            message: await JobServices.update({ job: req.body, jobId: req.params.id, creatorId: req.user.id }) ? 'Update successfully' : "Don't update"
+            message: await JobServices.update({ job: req.body, jobId: req.params.id, creatorId: req.user.id }) ? 'Cập nhật công việc thành công' : "Không thể cập nhật công việc"
         }).send(res)
     }
 

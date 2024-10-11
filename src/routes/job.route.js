@@ -2,7 +2,7 @@ const express = require('express');
 const JobController = require('../controllers/JobController');
 const router = express.Router();
 const { catchAsyncError } = require('../utils/catchAsyncError');
-const { authentication } = require('../utils/auth/authUtils');
+const { authentication, canAccess } = require('../utils/auth/authUtils');
 
 // router.get("/pending-jobs", JobController.getPendingJob);
 // router.get("/bidding-jobs", JobController.getBiddingJob);
@@ -14,11 +14,14 @@ const { authentication } = require('../utils/auth/authUtils');
 // router.get("/freelancer-current-and-fail-jobs", JobController.getFreelancerCurrentAndFailJob)
 // // router.get("/freelancer-current-jobs-v2", JobController.getFreelancerCurrentJobs)
 router.get("/:id", catchAsyncError(JobController.getById));
+router.get("/employer", authentication, catchAsyncError(JobController.getEmployerJob));
 router.get("/", catchAsyncError(JobController.getAll));
 
-router.post("/", authentication, catchAsyncError(JobController.create));
+// employer can create jobs
+router.post("/", authentication, canAccess('add-job'), catchAsyncError(JobController.create));
 
-router.patch('/:id', authentication, catchAsyncError(JobController.update));
+// job can be updated when status is draft and user is creator of job
+router.patch('/:id', authentication, canAccess('update-job'), catchAsyncError(JobController.update));
 router.delete('/:id', authentication, catchAsyncError(JobController.delete));
 
 module.exports = router;

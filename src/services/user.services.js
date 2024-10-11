@@ -19,6 +19,14 @@ class UserServices {
         });
     }
 
+    static async getMyInfor({ id }) {
+        return await User.findOne({
+            where: {
+                id
+            },
+        });
+    }
+
     static async updateAvatar({ userId, path }) {
         const uploadResult = await cloudinary.uploader
             .upload(path, {

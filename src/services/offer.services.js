@@ -7,6 +7,20 @@ class OfferServices {
         return await OfferRepository.findAllByJobIdAndUserId({ jobId, userId });
     }
 
+    static async getByFreelancer({ employeeId }) {
+        const offers = await Offer.findAll({
+            where: {
+                creatorId: employeeId,
+            }
+        })
+
+        if (offers.length === 0) {
+            throw new BadRequestError('Bạn chưa gửi lời chào giá.')
+        }
+
+        return offers;
+    }
+
     static async create({ creatorId, jobId, offerData }) {
         /*
         1/ Check job exists

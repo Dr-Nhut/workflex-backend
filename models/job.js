@@ -61,7 +61,7 @@ module.exports = (sequelize, DataTypes) => {
         validate: {
           isGreaterThanMinBudget(value) {
             if (parseInt(value) <= parseInt(this.minBudget)) {
-              throw new Error('maxBudget must be greater than minBudget.');
+              throw new Error('Ngân sách cao nhất phải lớn hơn hoặc bằng ngân sách thấp nhất.');
             }
           }
         }
@@ -78,7 +78,7 @@ module.exports = (sequelize, DataTypes) => {
         validate: {
           isGreaterThanBidExperition(value) {
             if (new Date(value) <= new Date(this.bidExpiration)) {
-              throw new Error('dateStart must be greater than bidExpiration.');
+              throw new Error('Ngày bắt đầu nên lớn hơn ngày hết hạn chào giá.');
             }
           }
         }
@@ -89,7 +89,7 @@ module.exports = (sequelize, DataTypes) => {
         validate: {
           isGreaterThanDateStart(value) {
             if (new Date(value) <= new Date(this.dateStart)) {
-              throw new Error('dateEnd must be greater than dateStart.');
+              throw new Error('Ngày kết thúc nên lớn hơn ngày bắt đầu.');
             }
           }
         }

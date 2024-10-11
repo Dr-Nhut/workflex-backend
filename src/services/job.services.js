@@ -7,6 +7,21 @@ class JobServices {
     return await Job.findAll();
   }
 
+  static async getByEmployerId({ employerId, status, comparison }) {
+    const jobs = await Job.findAll({
+      where: {
+        creatorId: employerId,
+        status,
+      }
+    });
+
+    if (!jobs) {
+      throw new BadRequestError('Không tìm thấy công việc');
+    }
+
+    return jobs;
+  }
+
   static async getById(id) {
     const job = await Job.findByPk(id, {
       include: [{
@@ -19,18 +34,18 @@ class JobServices {
     });
 
     if (!job) {
-      throw new NotFoundError("Job not found!")
+      throw new NotFoundError(`Không tìm thấy công việc ${id}`)
     }
 
     return job;
   }
 
-  static async create(job, creatorId) {
+  static async create({ job, creatorId }) {
     try {
       const newJob = await Job.create({ ...job, creatorId });
 
       if (!newJob) {
-        throw new BadRequestError("Couldn't create job")
+        throw new BadRequestError("Không thể tạo mới việc làm")
       }
 
       return newJob;
@@ -52,6 +67,7 @@ class JobServices {
         }, {
         where: {
           id: jobId,
+          status: '0',
           creatorId
         }
       })

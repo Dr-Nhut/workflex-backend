@@ -13,17 +13,17 @@ const { send } = require('../services/mail.services');
 
 class AuthController {
     async sendEmail(req, res) {
-
         return OK.create({
             message: 'Đã gửi email xác thực',
             metadata: await send({ email: req.body.email })
         }).send(res);
     }
 
-    verifyEmail(req, res) {
+    async verifyEmail(req, res) {
+
         return OK.create({
             message: 'Xác thực email thành công.',
-            metadata: verifyEmail(req.query.email, req.query.token)
+            metadata: await verifyEmail(req.query.email, req.query.token)
         }).send(res);
     }
 
@@ -35,9 +35,9 @@ class AuthController {
         return OK.create(await login(req.body)).send(res);
     }
 
-    async logout(req, res, next) {
+    async logout(req, res) {
         return OK.create({
-            message: 'Logout successfully',
+            message: 'Đăng xuất thành công',
             metadata: await logout(req.keyStore)
         }).send(res);
     }

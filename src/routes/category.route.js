@@ -1,6 +1,5 @@
 const express = require('express');
 const CategoryController = require('../controllers/CategoryController');
-const AuthController = require('../controllers/AuthController');
 const validateUUID = require('../middlewares/validateUUIDv4');
 const { catchAsyncError } = require('../utils/catchAsyncError');
 const { authentication, canAccess } = require('../utils/auth/authUtils');

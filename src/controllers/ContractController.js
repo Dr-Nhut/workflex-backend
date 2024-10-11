@@ -1,9 +1,9 @@
-const conn = require('../config/db.config');
+
 const { Created, NoContent, OK } = require('../core/success.reponse');
 const ContractServices = require('../services/contract.services');
 
 class ContractController {
-    async getByUser(req, res, next) {
+    async getByUser(req, res) {
         const contracts = await ContractServices.getByUser({ userId: req.user.id })
         return OK.create({
             message: 'success',
@@ -14,7 +14,7 @@ class ContractController {
         }).send(res);
     }
 
-    async create(req, res, next) {
+    async create(req, res) {
         const { dateStart, dateEnd, value, offerId, jobId } = req.body;
 
         return Created.create({

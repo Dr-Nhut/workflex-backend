@@ -4,8 +4,7 @@ const skillRouter = express.Router();
 const { catchAsyncError } = require('../utils/catchAsyncError');
 const validateUUID = require('../middlewares/validateUUIDv4');
 
-skillRouter
-    .route("/")
+skillRouter.route("/")
     .get(catchAsyncError(SkillController.getAll))
     .post(catchAsyncError(SkillController.create))
 

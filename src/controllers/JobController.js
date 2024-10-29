@@ -104,11 +104,13 @@ class JobController {
     }
 
     async getAll(req, res) {
-        const jobs = await JobServices.getAll();
+        const jobs = await JobServices.getAll(req.query);
         return OK.create({
-            message: "Success",
-            result: jobs.length,
-            metadata: jobs
+            message: "Thành công",
+            metadata: {
+                length: jobs.length,
+                jobs
+            }
         }).send(res);
     }
 
@@ -142,11 +144,26 @@ class JobController {
 
     async update(req, res) {
         return OK.create({
-            message: await JobServices.update({ job: req.body, jobId: req.params.id, creatorId: req.user.id }) ? 'Cập nhật công việc thành công' : "Không thể cập nhật công việc"
+            message: "Thành công",
+            metadata: await JobServices.update({ job: req.body, jobId: req.params.id, creatorId: req.user.id })
         }).send(res)
     }
 
-    async delete(req, res, next) {
+    async submit(req, res) {
+        await JobServices.submit({ jobId: req.params.id, creatorId: req.user.id })
+        return OK.create({
+            message: "Thành công",
+        }).send(res)
+    }
+
+    async approve(req, res) {
+        await JobServices.approve({ approveContent: req.body, jobId: req.params.id })
+        return OK.create({
+            message: "Thành công",
+        }).send(res)
+    }
+
+    async delete(req, res) {
         await JobServices.delete({
             jobId: req.params.id, creatorId: req.user.id
         })

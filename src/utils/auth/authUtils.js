@@ -32,10 +32,10 @@ const createTokenPair = async (payload, publicKey, privateKey) => {
 
 const authentication = catchAsyncError(async (req, res, next) => {
     const userId = req.headers[HEADER.CLIENT_ID];
-    if (!userId) throw new UnauthorizedError('Invalid client ID');
+    if (!userId) throw new UnauthorizedError('Client ID là bắt buộc cho quá trình xác thực');
 
     const keyStore = await findKeyTokenByUserId({ userId })
-    if (!keyStore) throw new NotFoundError('No key store found');
+    if (!keyStore) throw new NotFoundError('Không tìm thấy dữ liệu đăng nhập hệ thống');
 
     let accessToken;
     if (req.headers[HEADER.AUTHORIZATION] && req.headers[HEADER.AUTHORIZATION].startsWith('Bearer ')) {
@@ -90,11 +90,13 @@ const canAccess = (permission) => catchAsyncError(async (req, res, next) => {
         ],
     });
 
+    if (!access) {
+        throw new UnauthorizedError('Bạn không có quyền truy cập tài nguyên này');
+    }
+
     const user = await User.findOne({
         where: { id: req.user.id },
     })
-
-
 
     for (const item of access.Roles) {
         if (user.roleId === item.id) {

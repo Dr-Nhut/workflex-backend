@@ -14,6 +14,12 @@ module.exports = (sequelize, DataTypes) => {
         }
     }
     ApiKey.init({
+        id: {
+            allowNull: false,
+            primaryKey: true,
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
+        },
         key: {
             type: DataTypes.STRING,
             allowNull: false,

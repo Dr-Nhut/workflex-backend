@@ -1,7 +1,7 @@
 const model = require('../models');
 const Constants = require('../constants');
 
-const { User, Role, Permission } = model;
+const { Role, Permission } = model;
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {

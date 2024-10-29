@@ -14,6 +14,50 @@ tags:
   - name: user
     description: Operations about user
 paths:
+  /auth/register:
+    post:
+      tags:
+        - auth
+      summary: Đăng ký tài khoản mới
+      description: 'Cho phép người dùng tạo tài khoản nhà tuyển dụng hoặc freelancer'
+      operationId: signupUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInfo'
+      responses:
+        '200':
+          description: Đăng ký thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          tokens:
+                            type: object
+                            properties:
+                              accessToken:
+                                type: string
+                                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNmZGU4NThiLTk4MmMtNDM3Yy1hY2YyLTI3NGE3NzMwNmEwOSIsImVtYWlsIjoicXV5bGhAZ21haWwuY29tIiwiaWF0IjoxNzI2MDEzMzY4LCJleHAiOjE3MjYxODYxNjh9.hiA5Kpqb3SSCNe770Lh3263xE6CBW2eaLJxZx3wGPDk
+                              refreshToken:
+                                type: string
+                                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNmZGU4NThiLTk4MmMtNDM3Yy1hY2YyLTI3NGE3NzMwNmEwOSIsImVtYWlsIjoicXV5bGhAZ21haWwuY29tIiwiaWF0IjoxNzI2MDEzMzY4LCJleHAiOjE3MjYxODYxNjh9.sQelN-zVihKwJvwy3pVyggl5pBAD_KpGmxSgbYT7_EE
+                          id:
+                            type: string
+                            format: uuid
+                            example: 5cafca46-7548-44d7-8411-cb21995f79ee
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /auth/login:
     post:
       tags:
@@ -137,7 +181,139 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /user/update-categories:
+    patch:
+      tags:
+        - user
+      summary: Cho phép user cập nhật lĩnh vực chuyên môn
+      operationId: updateCategoies
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: header
+          name: x-client-id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Client ID for authentication
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                categories:
+                  type: array
+                  example: ['c1008314-6bea-49cf-a8c7-5d095292c692']
+      responses:
+        '200':
+          description: Cập nhật lĩnh vực chuyên môn thành công!
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: array
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: NotFounded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /job:
+    get:
+      tags:
+        - job
+      summary: Lấy thông tin việc làm đang chào giá trên hệ thống
+      description: User
+      operationId: getAll
+      parameters:
+        - name: text
+          in: query
+          description: Filter by title
+          required: false
+          explode: true
+          schema:
+            type: string
+        - name: budget
+          in: query
+          description: minBudget >= budget
+          required: false
+          explode: true
+          schema:
+            type: integer
+        - name: experience
+          in: query
+          description: checkbox experience
+          required: false
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+        - name: categories
+          in: query
+          description: checkbox category
+          required: false
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+              format: uuid
+        - name: skills
+          in: query
+          description: checkbox skills
+          required: false
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+              format: uuid
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          length:
+                            type: integer
+                            example: 1
+                          jobs:
+                            type: array
+                            items:
+                              type: object
+                              $ref: '#/components/schemas/Job'
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
     post:
       tags:
         - job
@@ -153,22 +329,217 @@ paths:
             type: string
             format: uuid
           required: true
-          description: Client ID for authentication
+          description: Client ID của user thao tác để xác thực
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Job'
-        required: true
       responses:
         '200':
           description: Thêm mới thành công
           content:
             application/json:
               schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        $ref: '#/components/schemas/Job'
+
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /job/{id}:
+    patch:
+      tags:
+        - job
+      summary: Cập nhật việc làm ở chế độ draft
+      description: Employer
+      security:
+        - bearerAuth: []
+      operationId: updateJob
+      parameters:
+        - in: header
+          name: x-client-id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Client ID của user thao tác để xác thực
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: id của công việc
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Job'
+      responses:
+        '200':
+          description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        $ref: '#/components/schemas/Job'
+
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: UnauthorizedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - job
+      summary: Xóa việc làm chưa ở trạng thái thực hiện
+      description: Employer
+      security:
+        - bearerAuth: []
+      operationId: deleteJob
+      parameters:
+        - in: header
+          name: x-client-id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Client ID của user thao tác để xác thực
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: id của công việc
+      responses:
+        '204':
+          description: Xóa thành công
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: UnauthorizedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /job/{id}/submit:
+    post:
+      tags:
+        - job
+      summary: Gửi công việc cho admin phê duyệt
+      description: Employer
+      security:
+        - bearerAuth: []
+      operationId: submitJob
+      parameters:
+        - in: header
+          name: x-client-id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Client ID của user thao tác để xác thực
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: id của công việc
+      responses:
+        '200':
+          description: Submit thành công
+          content:
+            application/json:
+              schema:
                 $ref: '#/components/schemas/SuccessResponse'
         '400':
           description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: UnauthorizedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /job/{id}/approve:
+    post:
+      tags:
+        - job
+      summary: Admin phê duyệt hoặc từ chối công việc
+      description: Admin
+      security:
+        - bearerAuth: []
+      operationId: submitJob
+      parameters:
+        - in: header
+          name: x-client-id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Client ID của user thao tác để xác thực
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: id của công việc
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                result:
+                  type: integer
+                  example: 1
+                reasonRefused:
+                  type: string
+      responses:
+        '200':
+          description: Duyệt thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: UnauthorizedError
           content:
             application/json:
               schema:
@@ -366,6 +737,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /role:
+    get:
+      tags:
+        - role
+      summary: Lấy thông tin tất cả vai trò trên hệ thống
+      operationId: roleGetAllExceptAdmin
+      responses:
+        '200':
+          description: Thành công!
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Role'
+        '404':
+          description: NotFound
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /role/add-permission:
     post:
       tags:
@@ -431,8 +828,131 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /experience:
+    get:
+      tags:
+        - experience
+      summary: Lấy thông tin tất cả danh mục kinh nghiệm
+      description: All
+      operationId: getAllExperiences
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          length:
+                            type: integer
+                            example: 1
+                          experiences:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Experience'
+        '404':
+          description: NotFound
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - experience
+      summary: Thêm mới danh mục kinh nghiệm
+      description: Admin
+      security:
+        - bearerAuth: []
+      operationId: addExperience
+      parameters:
+        - in: header
+          name: x-client-id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Client ID for authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  type: string
+                  example: 7 năm
+        required: true
+      responses:
+        '200':
+          description: Thêm mới thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: UnauthorizedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
+    UserInfo:
+      type: object
+      required:
+        - email
+        - password
+        - passwordConfirm
+        - name
+        - roleId
+        - phone
+      properties:
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+          example: User
+        password:
+          type: string
+          example: 'nhut@dev'
+        passwordConfirm:
+          type: string
+          example: 'nhut@dev'
+        address:
+          type: string
+          example: 'Quận 1, Thành phố Hồ Chí Minh'
+        roleId:
+          type: string
+          format: uuid
+          example: 276f4120-cfc3-4d87-a52c-3988fbc04fe5
+        sex:
+          type: boolean
+        bankAccount:
+          type: string
+          example: 111122223333
+        phone:
+          type: string
+          example: '0323456789'
+        dataOfBirth:
+          type: string
+          format: date-time
+        experience:
+          type: string
+          example: 'Dưới 1 năm'
+        avatar:
+          type: string
+          example: https://res.cloudinary.com/workflex/image/upload/v1728978220/avatar/32d7d310-dbce-46f3-b15d-f64dba74b04b/avatar.jpg
     AuthLogin:
       type: object
       properties:
@@ -459,22 +979,43 @@ components:
           format: date-time
       xml:
         name: category
-    Job:
+    Experience:
       type: object
       properties:
         id:
           type: string
           format: uuid
+          example: 2654f526-7526-4294-9923-ea5370d874b4
+        name:
+          type: string
+          example: 'Dưới 1 năm'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      xml:
+        name: experience
+    Job:
+      type: object
+      required:
+        - title
+        - description
+        - creatorId
+        - minBudget
+        - maxBudget
+        - dateStart
+        - dateEnd
+        - bidExpiration
+        - categoriyId
+      properties:
         title:
           type: string
           example: 'Tạo website để đăng truyện tự sáng tác'
         description:
           type: string
           example: 'Tôi muốn tạo website đăng truyện tự sáng tác. Có chức năng thanh toán trực tuyến'
-        creatorId:
-          type: string
-          format: uuid
-          example: '8ae7d68b-f29c-44a6-8365-764255c703cd'
         categoryId:
           type: string
           format: uuid
@@ -482,7 +1023,8 @@ components:
         skills:
           type: array
           items:
-            $ref: '#/components/schemas/JobSkills'
+            format: uuid
+            example: 28dce3d9-73c0-4736-9909-4d23e52ab5ed
         minBudget:
           type: number
           example: 2000000
@@ -491,8 +1033,8 @@ components:
           example: 3000000
         experience:
           type: string
-          format: ENUM
-          example: '0'
+          format: uuid
+          example: f28246b1-b3e6-4e1d-af43-cb3286cecb10
         dateStart:
           type: string
           format: date-time
@@ -505,19 +1047,10 @@ components:
           type: string
           format: date-time
           example: '2024-10-01'
-        reasonRefused:
-          type: string
-        status:
-          type: string
-          format: ENUM
-          example: '0'
         type:
           type: string
           format: ENUM
           example: 'Online'
-        completedAt:
-          type: string
-          format: date-time
         createdAt:
           type: string
           format: date-time
@@ -538,6 +1071,24 @@ components:
         SkillId:
           type: string
           format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Role:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          example: freelancer
+        description:
+          type: string
+          example: Ứng viên tìm kiếm việc làm freelance
         createdAt:
           type: string
           format: date-time

@@ -9,8 +9,6 @@ class PermissionServices {
     static create = async ({ title = '', description }) => {
         const permission = await Permission.findOne({ where: { title } });
 
-
-
         if (permission) {
             throw new UnprocessableEntityError('Quyền đã tồn tại!')
         }

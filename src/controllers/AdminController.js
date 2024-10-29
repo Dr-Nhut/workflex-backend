@@ -81,10 +81,10 @@ class AdminController {
     sendMailRecommendation(req, res) {
         Promise.all(req.topFreelancers.map((freelancer) => {
 
-                const sql = `SELECT email, fullname FROM user WHERE user.id ='${freelancer}'`
+            const sql = `SELECT email, fullname FROM user WHERE user.id ='${freelancer}'`
 
-                return conn.promise().query(sql)
-            }))
+            return conn.promise().query(sql)
+        }))
             .then(result => {
                 result.map(([rows, fields]) => {
                     mailer.sendMail('leminhnhut1612@gmail.com', "Có công việc mới dành cho bạn", `<h1>Xin chào, ${rows[0].fullname}</h1><p>Nhà tuyển dụng vừa thêm công việc mới, <a href="${process.env.APP_FE_URL}/freelancer-bids/${req.params.id}">Chào giá ngay</a ></p >`)

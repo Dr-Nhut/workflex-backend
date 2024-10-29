@@ -4,8 +4,4 @@
 
 **Công nghệ sử dụng**: NodeJS.
 
-**Cơ sở dữ liệu**: MySQL
-**Tài khoản test**:
- -Admin: +admin@gmail.com  pw: 99999999
- -Employer: +employer@gmail.com pw: 999999999
- -Freelancer: +freelancer@gmail.com pw: 99999999
+**Cơ sở dữ liệu**: Postgres

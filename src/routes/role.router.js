@@ -4,9 +4,10 @@ const RoleController = require('../controllers/RoleController');
 const { catchAsyncError } = require('../utils/catchAsyncError');
 const { authentication, canAccess } = require('../utils/auth/authUtils');
 
-// roleRouter
-//     .route("/")
-//     .post(authentication, catchAsyncError(RoleController.create));
+roleRouter
+    .route("/")
+    .get(catchAsyncError(RoleController.getAllExceptAdmin))
+// .post(authentication, catchAsyncError(RoleController.create));
 
 roleRouter
     .route("/add-permission")

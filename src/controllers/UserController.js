@@ -1,4 +1,3 @@
-const crypto = require('crypto');
 const conn = require('../config/db.config');
 const { OK } = require('../core/success.reponse');
 const UserServices = require('../services/user.services');
@@ -51,10 +50,16 @@ class UserController {
     }
 
     async updateAvatar(req, res) {
-        console.log(req.file)
         return OK.create({
             message: 'Cập nhật ảnh đại diện thành công!',
             metadata: await UserServices.updateAvatar({ userId: req.user.id, path: req.file.path })
+        }).send(res);
+    }
+
+    async updateCategories(req, res) {
+        return OK.create({
+            message: 'Bạn đã cập nhật lĩnh vực chuyên môn thành công!',
+            metadata: await UserServices.updateCategories({ userId: req.user.id, categories: req.body.categories })
         }).send(res);
     }
 

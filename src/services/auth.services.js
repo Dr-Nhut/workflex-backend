@@ -9,13 +9,13 @@ const { findUserByEmail } = require('./user.services');
 
 class AuthServies {
     static register = async (user) => {
-        const { name, email, password, passwordConfirm, address, roleId, sex, bankAccount, phone, dataOfBirth, experience, avatar } = user;
+        const { name, email, password, passwordConfirm, address, roleId, sex, phone, dataOfBirth, experience } = user;
 
         if (password !== passwordConfirm) {
             throw new BadRequestError('Mật khẩu không khớp!!!');
         }
         const newUser = await User.create({
-            name, email, password, address, roleId, avatar, sex, bankAccount, phone, dataOfBirth, experience
+            name, email, password, address, roleId, sex, phone, dataOfBirth, experience
         });
 
         if (newUser) {
@@ -33,9 +33,10 @@ class AuthServies {
 
             return {
                 code: '201',
+                message: 'Tạo tài khoản thành công',
                 metadata: {
                     tokens,
-                    user: newUser,
+                    id: newUser.id,
                 }
             }
         }

@@ -20,14 +20,13 @@ class AuthController {
     }
 
     async verifyEmail(req, res) {
-
         return OK.create({
             message: 'Xác thực email thành công.',
             metadata: await verifyEmail(req.query.email, req.query.token)
         }).send(res);
     }
 
-    async registerUser(req, res, next) {
+    async registerUser(req, res) {
         return OK.create(await register(req.body)).send(res)
     }
 

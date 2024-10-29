@@ -8,12 +8,16 @@ const handleTokenExpiredError = () => {
     return new AppError('Tài khoản quá hạn! Vui lòng đăng nhập lại!!!', 401);
 }
 
+const handleFireignKeyConstraintError = (message) => {
+    return new AppError(message, 400);
+}
+
 const handleSequelize = (message) => {
     return new AppError(message, 400);
 }
 
 module.exports = (err, req, res, next) => {
-    console.log(err);
+    console.error(err.name);
     err.statusCode = err.status || 500;
     err.status = `${err.status}`.startsWith('4') ? 'fail' : 'error';
 
@@ -23,6 +27,7 @@ module.exports = (err, req, res, next) => {
             'SequelizeValidationError': handleSequelize,
             'JsonWebTokenError': handleJWTError,
             'TokenExpiredError': handleTokenExpiredError,
+            'SequelizeForeignKeyConstraintError': handleFireignKeyConstraintError
         }
 
         if (errObj[err.name]) {
@@ -45,7 +50,7 @@ module.exports = (err, req, res, next) => {
         else {
             res.status(500).json({
                 status: 'error',
-                message: 'Unexpected error'
+                message: 'Lỗi server'
             })
         }
 

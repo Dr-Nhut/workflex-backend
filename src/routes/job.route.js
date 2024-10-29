@@ -18,10 +18,12 @@ router.get("/employer", authentication, catchAsyncError(JobController.getEmploye
 router.get("/", catchAsyncError(JobController.getAll));
 
 // employer can create jobs
+router.post('/:id/submit', authentication, canAccess('submit-job'), catchAsyncError(JobController.submit));
+router.post('/:id/approve', authentication, canAccess('approve-job'), catchAsyncError(JobController.approve));
 router.post("/", authentication, canAccess('add-job'), catchAsyncError(JobController.create));
 
-// job can be updated when status is draft and user is creator of job
+// job can be updated when user is creator of job 
 router.patch('/:id', authentication, canAccess('update-job'), catchAsyncError(JobController.update));
-router.delete('/:id', authentication, catchAsyncError(JobController.delete));
+router.delete('/:id', authentication, canAccess('delete-job'), catchAsyncError(JobController.delete));
 
 module.exports = router;

@@ -1,6 +1,6 @@
 const { User } = require('../../models');
 const cloudinary = require('../config/cloudinary.config')
-const { BadRequestError } = require("../core/error.response")
+const { BadRequestError, NotFoundError } = require("../core/error.response")
 
 
 class UserServices {
@@ -45,6 +45,16 @@ class UserServices {
         return {
             'avatarUrl': uploadResult.secure_url
         }
+    }
+
+    static async updateCategories({ userId, categories }) {
+        const user = await User.findByPk(userId);
+
+        if (!user) {
+            throw new NotFoundError('Không tìm thấy tài khoản người dùng.');
+        }
+
+        return await user.setCategories(categories);
     }
 }
 

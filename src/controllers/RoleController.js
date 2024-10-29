@@ -4,6 +4,13 @@ const { OK, Created, } = require('../core/success.reponse');
 const RoleServices = require('../services/role.services');
 
 class RoleController {
+    async getAllExceptAdmin(req, res) {
+        return OK.create({
+            message: 'Thành công',
+            metadata: await RoleServices.getAllExceptAdmin()
+        }).send(res)
+    }
+
     async create(req, res) {
         return Created.create({
             message: `Thêm vai trò mới thành công!`,

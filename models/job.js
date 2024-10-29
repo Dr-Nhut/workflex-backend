@@ -43,22 +43,44 @@ module.exports = (sequelize, DataTypes) => {
       title: {
         type: DataTypes.STRING,
         allowNull: false,
+        validate: {
+          notNull: {
+            msg: 'Tiêu đề không được bỏ trống'
+          }
+        }
       },
       description: {
         type: DataTypes.TEXT,
         allowNull: false,
+        validate: {
+          notNull: {
+            msg: 'Mô tả không được bỏ trống'
+          },
+          notEmpty: {
+            msg: 'Mô tả không được bỏ trống'
+          }
+        }
       },
       minBudget: {
         type: DataTypes.INTEGER,
         allowNull: false,
         validate: {
-          min: 1000,
+          notNull: {
+            msg: 'Ngân sách không được bỏ trống'
+          },
+          min: {
+            msg: 'Ngân sách thấp nhất phải lớn hơn 999đ',
+            args: 1000,
+          },
         }
       },
       maxBudget: {
         type: DataTypes.INTEGER,
         allowNull: false,
         validate: {
+          notNull: {
+            msg: 'Ngân sách không được bỏ trống'
+          },
           isGreaterThanMinBudget(value) {
             if (parseInt(value) <= parseInt(this.minBudget)) {
               throw new Error('Ngân sách cao nhất phải lớn hơn hoặc bằng ngân sách thấp nhất.');
@@ -66,16 +88,14 @@ module.exports = (sequelize, DataTypes) => {
           }
         }
       },
-      experience: {
-        type: DataTypes.ENUM,
-        defaultValue: "0",
-        values: ["0", "1", "2", "3"],
-        allowNull: false,
-      },
+      experience: DataTypes.STRING,
       dateStart: {
         type: DataTypes.DATE,
         allowNull: false,
         validate: {
+          notNull: {
+            msg: 'Ngày bắt đầu không được bỏ trống',
+          },
           isGreaterThanBidExperition(value) {
             if (new Date(value) <= new Date(this.bidExpiration)) {
               throw new Error('Ngày bắt đầu nên lớn hơn ngày hết hạn chào giá.');
@@ -87,6 +107,9 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DATE,
         allowNull: false,
         validate: {
+          notNull: {
+            msg: 'Ngày kết thúc không được bỏ trống'
+          },
           isGreaterThanDateStart(value) {
             if (new Date(value) <= new Date(this.dateStart)) {
               throw new Error('Ngày kết thúc nên lớn hơn ngày bắt đầu.');
@@ -98,6 +121,9 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DATE,
         allowNull: false,
         validate: {
+          notNull: {
+            msg: 'Hạn chào giá không được bỏ trống'
+          },
           isDate: true,
           isAfter: new Date().toString(),
         }
@@ -107,9 +133,8 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
       },
       status: {
-        type: DataTypes.ENUM,
-        defaultValue: "0",
-        values: ["0", "1", "2", "3", "4", "5", "6"],
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
         allowNull: false,
       },
       type: {
